@@ -1,0 +1,11 @@
+module("luci.controller.admin.viaview", package.seeall)
+
+function index()
+
+	entry({"admin", "new_tab"}, firstchild(), "New tab", 30).dependent=false
+
+	entry({"admin", "new_tab", "tab_from_cbi"}, cbi("myapp-mymodule/cbi_tab"), "CBI Tab", 1)
+
+	entry({"admin", "new_tab", "tab_from_view"}, template("myapp-mymodule/view_tab"), "View Tab", 2)
+
+end

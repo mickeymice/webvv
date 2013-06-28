@@ -1,0 +1,1411 @@
+<%+header%>
+
+<!--
+<script>
+//<![CDATA[
+console.log(location.search);
+str1=location.search;
+strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
+//document.getElementById("ApName").value=strApName;
+//]]>
+</script>
+-->
+
+<%-
+	require "bit"
+	require "luci.sys"
+	require "luci.tools.webadmin"
+	require "nixio.fs"	
+
+	--get message from AC-app
+	local preamble = "viamanag"
+	local cmdReceive
+	local statusCmdRecv = false
+
+	local cmdElemValue={}
+	local cmdElemString={"ApDhcpEnable","ApScanStatus","ApScanInterval","ApIpAddress","ApNetmask", "ApGateway","Ap2.4GEnable","ApClientNumber2.4G","ApHTMode2.4G","ApTransmitPower2.4G","ApMode2.4G", "ApChannel2.4G","ApCountryCode2.4G","ApFragmentation2.4G","ApRTSCTS2.4G","ApESSID2.4G1","ApHideSSID2.4G1", "ApSecurityMode2.4G1","ApIndexCipher2.4G1","ApKey2.4G1","PrimaryIP2.4G1","PrimaryIPPort2.4G1","PrimaryIPKey2.4G1", "SecondIP2.4G1","SecondIPPort2.4G1","SecondIPKey2.4G1","ApESSID2.4G2","ApHideSSID2.4G2","ApSecurityMode2.4G2", "ApIndexCipher2.4G2","ApKey2.4G2","PrimaryIP2.4G2","PrimaryIPPort2.4G2","PrimaryIPKey2.4G2","SecondIP2.4G2", "SecondIPPort2.4G2","SecondIPKey2.4G2","ApESSID2.4G3","ApHideSSID2.4G3","ApSecurityMode2.4G3","ApIndexCipher2.4G3", "ApKey2.4G3","PrimaryIP2.4G3","PrimaryIPPort2.4G3","PrimaryIPKey2.4G3","SecondIP2.4G3","SecondIPPort2.4G3", "SecondIPKey2.4G3","ApESSID2.4G4","ApHideSSID2.4G4","ApSecurityMode2.4G4","ApIndexCipher2.4G4","ApKey2.4G4", "PrimaryIP2.4G4","PrimaryIPPort2.4G4","PrimaryIPKey2.4G4","SecondIP2.4G4","SecondIPPort2.4G4","SecondIPKey2.4G4", "Ap5GEnable","ApClientNumber5G","ApHTMode5G","ApTransmitPower5G","ApMode5G","ApChannel5G","ApCountryCode5G", "ApFragmentation5G","ApRTSCTS5G","ApESSID5G1","ApHideSSID5G1","ApSecurityMode5G1","ApIndexCipher5G1","ApKey5G1", "PrimaryIP5G1","PrimaryIPPort5G1","PrimaryIPKey5G1","SecondIP5G1","SecondIPPort5G1","SecondIPKey5G1","ApESSID5G2", "ApHideSSID5G2","ApSecurityMode5G2","ApIndexCipher5G2","ApKey5G2","PrimaryIP5G2","PrimaryIPPort5G2","PrimaryIPKey5G2", "SecondIP5G2","SecondIPPort5G2","SecondIPKey5G2","ApESSID5G3","ApHideSSID5G3","ApSecurityMode5G3","ApIndexCipher5G3","ApKey5G3", "PrimaryIP5G3","PrimaryIPPort5G3","PrimaryIPKey5G3","SecondIP5G3","SecondIPPort5G3","SecondIPKey5G3","ApESSID5G4", "ApHideSSID5G4","ApSecurityMode5G4","ApIndexCipher5G4","ApKey5G4","PrimaryIP5G4","PrimaryIPPort5G4","PrimaryIPKey5G4", "SecondIP5G4","SecondIPPort5G4","SecondIPKey5G4"}
+
+	local revCmdElemString={["ApDhcpEnable"]=1,["ApScanStatus"]=2,["ApScanInterval"]=3,["ApIpAddress"]=4, ["ApNetmask"]=5,["ApGateway"]=6,["Ap2.4GEnable"]=7,["ApClientNumber2.4G"]=8,["ApHTMode2.4G"]=9,["ApTransmitPower2.4G"]=10,["ApMode2.4G"]=11,["ApChannel2.4G"]=12,["ApCountryCode2.4G"]=13, ["ApFragmentation2.4G"]=14,["ApRTSCTS2.4G"]=15,["ApESSID2.4G1"]=16,["ApHideSSID2.4G1"]=17,["ApSecurityMode2.4G1"]=18, ["ApIndexCipher2.4G1"]=19,["ApKey2.4G1"]=20,["PrimaryIP2.4G1"]=21,["PrimaryIPPort2.4G1"]=22,["PrimaryIPKey2.4G1"]=23,["SecondIP2.4G1"]=24,["SecondIPPort2.4G1"]=25,["SecondIPKey2.4G1"]=26,["ApESSID2.4G2"]=27,["ApHideSSID2.4G2"]=28,["ApSecurityMode2.4G2"]=29, ["ApIndexCipher2.4G2"]=30,["ApKey2.4G2"]=31,["PrimaryIP2.4G2"]=32,["PrimaryIPPort2.4G2"]=33,["PrimaryIPKey2.4G2"]=34,["SecondIP2.4G2"]=35,["SecondIPPort2.4G2"]=36,["SecondIPKey2.4G2"]=37,["ApESSID2.4G3"]=38,["ApHideSSID2.4G3"]=39,["ApSecurityMode2.4G3"]=40, ["ApIndexCipher2.4G3"]=41,["ApKey2.4G3"]=42,["PrimaryIP2.4G3"]=43,["PrimaryIPPort2.4G3"]=44,["PrimaryIPKey2.4G3"]=45,["SecondIP2.4G3"]=46,["SecondIPPort2.4G3"]=47,["SecondIPKey2.4G3"]=48,["ApESSID2.4G4"]=49,["ApHideSSID2.4G4"]=50,["ApSecurityMode2.4G4"]=51, ["ApIndexCipher2.4G4"]=52,["ApKey2.4G4"]=53,["PrimaryIP2.4G4"]=54,["PrimaryIPPort2.4G4"]=55,["PrimaryIPKey2.4G4"]=56,["SecondIP2.4G4"]=57,["SecondIPPort2.4G4"]=58,["SecondIPKey2.4G4"]=59,["Ap5GEnable"]=60,["ApClientNumber5G"]=61,["ApHTMode5G"]=62,["ApTransmitPower5G"]=63,["ApMode5G"]=64,["ApChannel5G"]=65,["ApCountryCode5G"]=66,["ApFragmentation5G"]=67,["ApRTSCTS5G"]=68, ["ApESSID5G1"]=69,["ApHideSSID5G1"]=70,["ApSecurityMode5G1"]=71,["ApIndexCipher5G1"]=72, ["ApKey5G1"]=73,["PrimaryIP5G1"]=74,["PrimaryIPPort5G1"]=75,["PrimaryIPKey5G1"]=76,["SecondIP5G1"]=77,["SecondIPPort5G1"]=78,["SecondIPKey5G1"]=79,["ApESSID5G2"]=80,["ApHideSSID5G2"]=81,["ApSecurityMode5G2"]=82,["ApIndexCipher5G2"]=83, ["ApKey5G2"]=84,["PrimaryIP5G2"]=85,["PrimaryIPPort5G2"]=86,["PrimaryIPKey5G2"]=87,["SecondIP5G2"]=88,["SecondIPPort5G2"]=89,["SecondIPKey5G2"]=90,["ApESSID5G3"]=91,["ApHideSSID5G3"]=92,["ApSecurityMode5G3"]=93,["ApIndexCipher5G3"]=94, ["ApKey5G3"]=95,["PrimaryIP5G3"]=96,["PrimaryIPPort5G3"]=97,["PrimaryIPKey5G3"]=98,["SecondIP5G3"]=99,["SecondIPPort5G3"]=100,["SecondIPKey5G3"]=101,["ApESSID5G4"]=102,["ApHideSSID5G4"]=103,["ApSecurityMode5G4"]=104,["ApIndexCipher5G4"]=105, ["ApKey5G4"]=106,["PrimaryIP5G4"]=107,["PrimaryIPPort5G4"]=108,["PrimaryIPKey5G4"]=109,["SecondIP5G4"]=110,["SecondIPPort5G4"]=111,["SecondIPKey5G4"]=112}
+
+
+	local index = 1
+	local socket = require"socket"
+	local host   = "192.168.1.225"
+	local port   = "1111"
+	local data, err = socket.connect(host, port)
+	if not data then
+		--fail(err)
+	else
+		data:setoption("tcp-nodelay", true)
+		data:settimeout(10)
+		data:send(preamble.."APConfigurationStart".."APName=".."\n")
+
+		while index <= 20 do
+			cmdReceive, err = data:receive()
+			if err then 
+				statusCmdRecv = false
+				break
+			end
+			if (string.find(cmdReceive, preamble.."APConfigurationStart")) then
+				statusCmdRecv = true
+				break
+			end
+		index = index + 1
+		end
+
+		data:close()
+		--pass("connected!")
+	end
+
+	--parse the command after receive
+	if statusCmdRecv then
+		index = 1
+		local cmdStr = "SecondIPKey5G4"
+		while index <= revCmdElemString[cmdStr] do
+			local element = cmdElemString[index].."="
+			if string.find(cmdReceive, element) then
+				local strTmp = string.sub(cmdReceive,string.find(cmdReceive, element),-1)
+				strTmp = string.sub(strTmp,string.len(element)+1,-1)
+				if string.find(strTmp, " ") then
+					cmdElemValue[index] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+				else
+					cmdElemValue[index] = strTmp
+				end
+			end
+		index = index+1
+		end
+		
+	end
+
+	strApName = luci.http.formvalue("ApName")
+	--glStra = "Shuant Test global varaible"
+-%>
+
+
+<form class="inline" method="get" action="<%=controller%>/admin/uci/ApConfSave">
+
+<div class="cbi-map" id="cbi-dhcp">
+	<h2><a id="content" name="content"><%:AP Configuration%></a></h2>
+	<div class="cbi-map-descr"><%:Set AP's IP <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr>-Server <abbr title="Service Set Identifier">SSID </abbr>and 2.4G/5G wireless attribute %></div>
+
+
+<!--
+<h1>ApName is :</h1>
+<h1><%=pcdata(strApName)%></h1>
+<h1><%=pcdata(index)%></h1>
+
+<%		index = 1
+		local cmdStr = "SecondIPKey5G4"
+		while index <= revCmdElemString[cmdStr] do
+%>
+<h1><%=pcdata(cmdElemString[index])%>::<%=pcdata(cmdElemValue[index])%></h1>
+<%
+		index = index+1
+		end
+%>
+-->
+
+
+	<label>AP Name: </label>
+	<input id="ApName" type="text" name="ApName" value="<%=pcdata(strApName)%>" style="width:150px" />
+	<br />
+
+	<fieldset class="cbi-section" id="cbi-dhcp-dnsmasq">
+	<legend>Ap Configuraion</legend>
+	<div class="cbi-section-descr"></div>
+
+	<ul class="cbi-tabmenu">
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='block';document.getElementById('tab2').style.display='none';document.getElementById('tab3').style.display='none';">Base Information</a></li>
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='none';document.getElementById('tab2').style.display='block';document.getElementById('tab3').style.display='none';">2.4G configuration</a></li>
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='none';document.getElementById('tab2').style.display='none';document.getElementById('tab3').style.display='block';">5G configuraion</a></li>
+<!--
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='none';document.getElementById('tab2').style.display='none';document.getElementById('tab3').style.display='none';document.getElementById('tab4').style.display='block'">Base Information</a></li>
+-->
+	</ul>
+	<fieldset class="cbi-section-node cbi-section-node-tabbed">
+		<div class="cbi-tabcontainer">
+		<div id="tab1" style="border:1px solid #ccc">
+
+			<div class="cbi-value"><label class="cbi-value-title">DHCP Enable</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<%	if (cmdElemValue[revCmdElemString["ApDhcpEnable"]] == "true") then	%>
+				<input id="ApDhcpEnable" class="cbi-input-checkbox" type="checkbox" name="ApDhcpEnable" checked="checked" onclick="fDhcpEnable('ApDhcpEnable');" />
+				<%	else	%>
+				<input id="ApDhcpEnable" class="cbi-input-checkbox" type="checkbox" name="ApDhcpEnable" onclick="fDhcpEnable('ApDhcpEnable');" />
+				<%	end	%>
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Enable this AP's  <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr> function in the local network
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Scan Status</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<%	if (cmdElemValue[revCmdElemString["ApScanStatus"]] == "true") then	%>
+				<input id="ApScanStatus" class="cbi-input-checkbox" type="checkbox" name="ApScanStatus" value="1" checked="checked" onclick="fDhcpEnable('ApScanStatus');" />
+				<%	else	%>
+				<input id="ApScanStatus" class="cbi-input-checkbox" type="checkbox" name="ApScanStatus" value="1" onclick="fDhcpEnable('ApScanStatus');" />
+				<%	end	%>
+				<label>Scan Interval (5~65535)</label>
+				<input id="ApScanInterval" type="text" name="ApScanInterval" value="<%=pcdata(cmdElemValue[revCmdElemString['ApScanInterval']])%>" style="width:50px" />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Disable enable AP scan function and set scan interval if enable
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">IP Address</label>
+			<div class="cbi-value-field">
+				<input id="ApIpAddress" type="text" class="cbi-input-text" name="ApIpAddress" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIpAddress']])%>" />
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			User can modify this AP's IP address
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Netmask</label>
+			<div class="cbi-value-field">
+				<input id="ApNetmask" type="text" class="cbi-input-text" name="ApNetmask" value="<%=pcdata(cmdElemValue[revCmdElemString['ApNetmask']])%>" />
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			User can modify this AP's Netmask
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Gateway</label>
+			<div class="cbi-value-field">
+				<input id="ApGateway" type="text" class="cbi-input-text" name="ApGateway" value="<%=pcdata(cmdElemValue[revCmdElemString['ApGateway']])%>" />
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			User can modify this AP's Gateway
+			</div></div></div>
+
+
+		</div></div>
+
+		<div class="cbi-tabcontainer">
+		<div id="tab2" style="display:none">
+
+			<div class="cbi-value"><label class="cbi-value-title">Enable 2.4G Mode</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1" />
+				<%	if (cmdElemValue[revCmdElemString["Ap2.4GEnable"]] == "true") then	%>
+				<input id="Ap2.4GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap2.4GEnable" value="1" checked="checked" onclick="f24G5GEnable('Ap2.4GEnable');" />
+				<%	else	%>
+				<input id="Ap2.4GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap2.4GEnable" value="1" onclick="f24G5GEnable('Ap2.4GEnable');" />
+				<%	end	%>
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Enable this AP's wifi 2.4G mode
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Client Number</label>
+			<div class="cbi-value-field">
+				<input id="ApClientNumber2.4G" type="text" class="cbi-input-text" name="ApClientNumber2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApClientNumber2.4G']])%>" />
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			The max number of client connect this AP
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">HT Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApHTMode2.4G" class="cbi-input-select" name="ApHTMode2.4G" >
+				<option id="cbi-network-wan-proto-static" value="0">20MHz</option>
+				<option id="cbi-network-wan-proto-static" value="1">40MHz 2nd channel below</option>
+				<option id="cbi-network-wan-proto-static" value="2">40MHz 2nd channel above</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Transmit Power</label>
+			<div class="cbi-value-field">
+				<select id="ApTransmitPower2.4G" class="cbi-input-select" name="ApTransmitPower2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApTransmitPower2.4G']])%>" >
+				<option id="cbi-network-wan-proto-static" value="0">0 dBm(1mW)</option>
+				<option id="cbi-network-wan-proto-static" value="4">4 dBm(2mW)</option>
+				<option id="cbi-network-wan-proto-static" value="5">5 dBm(3mW)</option>
+				<option id="cbi-network-wan-proto-static" value="7">7 dBm(5mW)</option>
+				<option id="cbi-network-wan-proto-static" value="8">8 dBm(6mW)</option>
+				<option id="cbi-network-wan-proto-static" value="9" selected="selected">9 dBm(7mW)</option>
+				<option id="cbi-network-wan-proto-static" value="10">10 dBm(10mW)</option>
+				<option id="cbi-network-wan-proto-static" value="11">11 dBm(12mW)</option>
+				<option id="cbi-network-wan-proto-static" value="12">12 dBm(15mW)</option>
+				<option id="cbi-network-wan-proto-static" value="13">13 dBm(19mW)</option>
+				<option id="cbi-network-wan-proto-static" value="14">14 dBm(25mW)</option>
+				<option id="cbi-network-wan-proto-static" value="15">15 dBm(31mW)</option>
+				<option id="cbi-network-wan-proto-static" value="16">16 dBm(39mW)</option>
+				<option id="cbi-network-wan-proto-static" value="17">17 dBm(50mW)</option>
+				<option id="cbi-network-wan-proto-static" value="18">18 dBm(63mW)</option>
+				<option id="cbi-network-wan-proto-static" value="19">19 dBm(79mW)</option>
+				<option id="cbi-network-wan-proto-static" value="20">20 dBm(100mW)</option>
+				<option id="cbi-network-wan-proto-static" value="21">21 dBm(125mW)</option>
+				<option id="cbi-network-wan-proto-static" value="22">22 dBm(158mW)</option>
+				<option id="cbi-network-wan-proto-static" value="23">23 dBm(199mW)</option>
+				<option id="cbi-network-wan-proto-static" value="24">24 dBm(251mW)</option>
+				<option id="cbi-network-wan-proto-static" value="25">25 dBm(316mW)</option>
+				<option id="cbi-network-wan-proto-static" value="26">26 dBm(398mW)</option>
+				<option id="cbi-network-wan-proto-static" value="27">27 dBm(501mW)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApMode2.4G" class="cbi-input-select" name="ApMode2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApMode2.4G']])%>" >
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="80211b">802.11 b</option>
+				<option id="cbi-network-wan-proto-static" value="80211g">802.11 g</option>
+				<option id="cbi-network-wan-proto-static" value="80211gn">802.11 g+n</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Channel</label>
+			<div class="cbi-value-field">
+				<select id="ApChannel2.4G" class="cbi-input-select" name="ApChannel2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApChannel2.4G']])%>" >
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="1">1(2.412GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="2">2(2.417GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="3">3(2.422GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="4">4(2.427GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="5">5(2.432GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="6">6(2.437GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="7">7(2.442GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="8">8(2.447GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="9">9(2.452GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="10">10(2.457GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="11">11(2.462GHz)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Country Code</label>
+			<div class="cbi-value-field">
+				<input id="ApCountryCode2.4G" type="text" class="cbi-input-text" name="ApCountryCode2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApCountryCode2.4G']])%>" disabled="disabled"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Fragmentation</label>
+			<div class="cbi-value-field">
+				<input id="ApFragmentation2.4G" type="text" class="cbi-input-text" name="ApFragmentation2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApFragmentation2.4G']])%>" />
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">RTS/CTS</label>
+			<div class="cbi-value-field">
+				<input id="ApRTSCTS2.4G" type="text" class="cbi-input-text" name="ApRTSCTS2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApRTSCTS2.4G']])%>" />
+			</div></div>
+
+			<fieldset class="cbi-section">
+			<legend>Multiple SSID Setting</legend>
+
+			<div class="cbi-section-node">
+				<table style="font-size:12px;width:85%">
+					<tr class="cbi-section-table-titles">
+						<th class="cbi-section-table-cell"><%:ESSID%></th>
+						<th class="cbi-section-table-cell"><%:Hide SSID%></th>
+						<th class="cbi-section-table-cell"><%:Security Mode%></th>
+						<th class="cbi-section-table-cell"><%:Index/Cipher%></th>
+						<th class="cbi-section-table-cell"><%:Key%></th>
+						<th class="cbi-section-table-cell"><%:Primary IP%></th>
+						<th class="cbi-section-table-cell"><%:Port%></th>
+						<th class="cbi-section-table-cell"><%:Key%></th>
+						<th class="cbi-section-table-cell"><%:Second IP%></th>
+						<th class="cbi-section-table-cell"><%:Port%></th>
+						<th class="cbi-section-table-cell"><%:Key%></th>
+					</tr>
+
+					<style>
+					.tabWidthFont100 {width:100px}
+					.tabWidthFont100 input,.tabWidthFont100 select{font-size:11px;}
+					.tabWidthFont80 {width:80px}
+					.tabWidthFont80 input,.tabWidthFont80 select{font-size:11px;}
+					.tabWidthFont40 {width:40px}
+					.tabWidthFont40 input,.tabWidthFont40 select{font-size:11px;}                 
+					</style>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID2.4G1" type="text" name="ApESSID2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID2.4G1']])%>" style="width:100%" />
+						</td>
+						<td class="cbi-value-field">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G1"]] == "true") then	%>
+							<input id="ApHideSSID2.4G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G1" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID2.4G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G1" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode2.4G1" name="ApSecurityMode2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G1']])%>" onclick="fSecurityMode('ApSecurityMode2.4G1');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher2.4G1" name="ApIndexCipher2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G1']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey2.4G1" type="text" name="ApKey2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey2.4G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP2.4G1" type="text" name="PrimaryIP2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP2.4G1']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort2.4G1" type="text" name="PrimaryIPPort2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort2.4G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey2.4G1" type="text" name="PrimaryIPKey2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey2.4G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP2.4G1" type="text" name="SecondIP2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP2.4G1']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort2.4G1" type="text" name="SecondIPPort2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort2.4G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey2.4G1" type="text" name="SecondIPKey2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey2.4G1']])%>" />
+						</td>
+					</tr>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID2.4G2" type="text" name="ApESSID2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID2.4G2']])%>" style="width:100%" />
+						</td>
+						<td class="tabWidthFont40">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G2"]] == "true") then	%>
+							<input id="ApHideSSID2.4G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G2" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID2.4G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G2" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode2.4G2" name="ApSecurityMode2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G2']])%>" onclick="fSecurityMode('ApSecurityMode2.4G2');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher2.4G2" name="ApIndexCipher2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G2']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey2.4G2" type="text" name="ApKey2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey2.4G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP2.4G2" type="text" name="PrimaryIP2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP2.4G2']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort2.4G2" type="text" name="PrimaryIPPort2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort2.4G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey2.4G2" type="text" name="PrimaryIPKey2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey2.4G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP2.4G2" type="text" name="SecondIP2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP2.4G2']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort2.4G2" type="text" name="SecondIPPort2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort2.4G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey2.4G2" type="text" name="SecondIPKey2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey2.4G2']])%>" />
+						</td>
+					</tr>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID2.4G3" type="text" name="ApESSID2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID2.4G3']])%>" style="width:100%" />
+						</td>
+						<td class="tabWidthFont40">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G3"]] == "true") then	%>
+							<input id="ApHideSSID2.4G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G3" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID2.4G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G3" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode2.4G3" name="ApSecurityMode2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G3']])%>" onclick="fSecurityMode('ApSecurityMode2.4G3');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher2.4G3" name="ApIndexCipher2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey2.4G3" type="text" name="ApKey2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey2.4G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP2.4G3" type="text" name="PrimaryIP2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP2.4G3']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort2.4G3" type="text" name="PrimaryIPPort2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort2.4G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey2.4G3" type="text" name="PrimaryIPKey2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey2.4G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP2.4G3" type="text" name="SecondIP2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP2.4G3']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort2.4G3" type="text" name="SecondIPPort2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort2.4G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey2.4G3" type="text" name="SecondIPKey2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey2.4G3']])%>" />
+						</td>
+					</tr>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID2.4G4" type="text" name="ApESSID2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID2.4G4']])%>" style="width:100%" />
+						</td>
+						<td class="tabWidthFont40">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G4"]] == "true") then	%>
+							<input id="ApHideSSID2.4G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G4" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID2.4G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G4" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode2.4G4" name="ApSecurityMode2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G4']])%>" onclick="fSecurityMode('ApSecurityMode2.4G4');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher2.4G4" name="ApIndexCipher2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G4']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey2.4G4" type="text" name="ApKey2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey2.4G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP2.4G4" type="text" name="PrimaryIP2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP2.4G4']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort2.4G4" type="text" name="PrimaryIPPort2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort2.4G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey2.4G4" type="text" name="PrimaryIPKey2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey2.4G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP2.4G4" type="text" name="SecondIP2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP2.4G4']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort2.4G4" type="text" name="SecondIPPort2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort2.4G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey2.4G4" type="text" name="SecondIPKey2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey2.4G4']])%>" />
+						</td>
+					</tr>
+
+				</table>
+			</div>
+
+
+			</fieldset>
+
+		</div></div>
+
+		<div id="tab3" style="display:none">
+
+			<div class="cbi-value"><label class="cbi-value-title">Enable 5G Mode</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<%	if (cmdElemValue[revCmdElemString["Ap5GEnable"]] == "true") then	%>
+				<input id="Ap5GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap5GEnable" value="1" checked="checked" onclick="f24G5GEnable('Ap5GEnable');" />
+				<%	else	%>
+				<input id="Ap5GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap5GEnable" value="1" onclick="f24G5GEnable('Ap5GEnable');" />
+				<%	end	%>
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Enable this AP's wifi 5G mode
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Client Number</label>
+			<div class="cbi-value-field">
+				<input id="ApClientNumber5G" type="text" class="cbi-input-text" name="ApClientNumber5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApClientNumber5G']])%>" />
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			The max number of client connect this AP
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">HT Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApHTMode5G" class="cbi-input-select" name="ApHTMode5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApHTMode5G']])%>" >
+				<option id="cbi-network-wan-proto-static" value="20MHz">20MHz</option>
+				<option id="cbi-network-wan-proto-static" value="40MHzBelow">40MHz 2nd channel below</option>
+				<option id="cbi-network-wan-proto-static" value="40MHzAbove">40MHz 2nd channel above</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Transmit Power</label>
+			<div class="cbi-value-field">
+				<select id="ApTransmitPower5G" class="cbi-input-select" name="ApTransmitPower5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApTransmitPower5G']])%>" >
+				<option id="cbi-network-wan-proto-static" value="0">0 dBm(1mW)</option>
+				<option id="cbi-network-wan-proto-static" value="4">4 dBm(2mW)</option>
+				<option id="cbi-network-wan-proto-static" value="5">5 dBm(3mW)</option>
+				<option id="cbi-network-wan-proto-static" value="7">7 dBm(5mW)</option>
+				<option id="cbi-network-wan-proto-static" value="8">8 dBm(6mW)</option>
+				<option id="cbi-network-wan-proto-static" value="9">9 dBm(7mW)</option>
+				<option id="cbi-network-wan-proto-static" value="10">10 dBm(10mW)</option>
+				<option id="cbi-network-wan-proto-static" value="11">11 dBm(12mW)</option>
+				<option id="cbi-network-wan-proto-static" value="12">12 dBm(15mW)</option>
+				<option id="cbi-network-wan-proto-static" value="13">13 dBm(19mW)</option>
+				<option id="cbi-network-wan-proto-static" value="14">14 dBm(25mW)</option>
+				<option id="cbi-network-wan-proto-static" value="15">15 dBm(31mW)</option>
+				<option id="cbi-network-wan-proto-static" value="16">16 dBm(39mW)</option>
+				<option id="cbi-network-wan-proto-static" value="17">17 dBm(50mW)</option>
+				<option id="cbi-network-wan-proto-static" value="18">18 dBm(63mW)</option>
+				<option id="cbi-network-wan-proto-static" value="19">19 dBm(79mW)</option>
+				<option id="cbi-network-wan-proto-static" value="20">20 dBm(100mW)</option>
+				<option id="cbi-network-wan-proto-static" value="21">21 dBm(125mW)</option>
+				<option id="cbi-network-wan-proto-static" value="22">22 dBm(158mW)</option>
+				<option id="cbi-network-wan-proto-static" value="23">23 dBm(199mW)</option>
+				<option id="cbi-network-wan-proto-static" value="24">24 dBm(251mW)</option>
+				<option id="cbi-network-wan-proto-static" value="25">25 dBm(316mW)</option>
+				<option id="cbi-network-wan-proto-static" value="26">26 dBm(398mW)</option>
+				<option id="cbi-network-wan-proto-static" value="27">27 dBm(501mW)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApMode5G" class="cbi-input-select" name="ApMode5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApMode5G']])%>" >
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="80211b">802.11 a</option>
+				<option id="cbi-network-wan-proto-static" value="80211gn">802.11 a+n</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Channel</label>
+			<div class="cbi-value-field">
+				<select id="ApChannel5G" class="cbi-input-select" name="ApChannel5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApChannel5G']])%>" >
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="1">36(5.180GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="2">40(5.200GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="3">44(5.220GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="4">48(5.240GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="5">49(5.745GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="6">153(5.765GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="7">157(5.785GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="8">161(5.805GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="9">165(5.825GHz)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Country Code</label>
+			<div class="cbi-value-field">
+				<input id="ApCountryCode5G" type="text" class="cbi-input-text" name="ApCountryCode5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApCountryCode5G']])%>" disabled="disabled"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Fragmentation</label>
+			<div class="cbi-value-field">
+				<input id="ApFragmentation5G" type="text" class="cbi-input-text" name="ApFragmentation5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApFragmentation5G']])%>" />
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">RTS/CTS</label>
+			<div class="cbi-value-field">
+				<input id="ApRTSCTS5G" type="text" class="cbi-input-text" name="ApRTSCTS5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApRTSCTS5G']])%>" />
+			</div></div>
+
+
+			<fieldset class="cbi-section">
+			<legend>Multiple SSID Setting</legend>
+			<div class="cbi-section-node">
+				<table style="font-size:12px;width:85%">
+					<tr class="cbi-section-table-titles">
+						<th class="cbi-section-table-cell"><%:ESSID%></th>
+						<th class="cbi-section-table-cell"><%:Hide SSID%></th>
+						<th class="cbi-section-table-cell"><%:Security Mode%></th>
+						<th class="cbi-section-table-cell"><%:Index/Cipher%></th>
+						<th class="cbi-section-table-cell"><%:Key%></th>
+						<th class="cbi-section-table-cell"><%:Primary IP%></th>
+						<th class="cbi-section-table-cell"><%:Port%></th>
+						<th class="cbi-section-table-cell"><%:Key%></th>
+						<th class="cbi-section-table-cell"><%:Second IP%></th>
+						<th class="cbi-section-table-cell"><%:Port%></th>
+						<th class="cbi-section-table-cell"><%:Key%></th>
+					</tr>
+
+					<style>
+					.tabWidthFont100 {width:100px}
+					.tabWidthFont100 input,.tabWidthFont100 select{font-size:11px;}
+					.tabWidthFont80 {width:80px}
+					.tabWidthFont80 input,.tabWidthFont80 select{font-size:11px;}
+					.tabWidthFont40 {width:40px}
+					.tabWidthFont40 input,.tabWidthFont40 select{font-size:11px;}                 
+					</style>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID5G1" type="text" name="ApESSID5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID5G1']])%>" style="width:100%" />
+						</td>
+						<td class="cbi-value-field">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G1"]] == "true") then	%>
+							<input id="ApHideSSID5G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G1" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID5G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G1" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode5G1" name="ApSecurityMode5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G1']])%>" onclick="fSecurityMode('ApSecurityMode5G1');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher5G1" name="ApIndexCipher5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G1']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey5G1" type="text" name="ApKey5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey5G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP5G1" type="text" name="PrimaryIP5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP5G1']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort5G1" type="text" name="PrimaryIPPort5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort5G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey5G1" type="text" name="PrimaryIPKey5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey5G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP5G1" type="text" name="SecondIP5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP5G1']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort5G1" type="text" name="SecondIPPort5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort5G1']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey5G1" type="text" name="SecondIPKey5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey5G1']])%>" />
+						</td>
+					</tr>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID5G2" type="text" name="ApESSID5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID5G2']])%>" style="width:100%" />
+						</td>
+						<td class="tabWidthFont40">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G2"]] == "true") then	%>
+							<input id="ApHideSSID5G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G2" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID5G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G2" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode5G2" name="ApSecurityMode5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G2']])%>" onclick="fSecurityMode('ApSecurityMode5G2');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher5G2" name="ApIndexCipher5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G2']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey5G2" type="text" name="ApKey5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey5G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP5G2" type="text" name="PrimaryIP5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP5G2']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort5G2" type="text" name="PrimaryIPPort5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort5G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey5G2" type="text" name="PrimaryIPKey5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey5G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP5G2" type="text" name="SecondIP5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP5G2']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort5G2" type="text" name="SecondIPPort5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort5G2']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey5G2" type="text" name="SecondIPKey5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey5G2']])%>" />
+						</td>
+					</tr>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID5G3" type="text" name="ApESSID5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID5G3']])%>" style="width:100%" />
+						</td>
+						<td class="tabWidthFont40">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G3"]] == "true") then	%>
+							<input id="ApHideSSID5G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G3" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID5G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G3" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode5G3" name="ApSecurityMode5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G3']])%>" onclick="fSecurityMode('ApSecurityMode5G3');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher5G3" name="ApIndexCipher5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey5G3" type="text" name="ApKey5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey5G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP5G3" type="text" name="PrimaryIP5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP5G3']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort5G3" type="text" name="PrimaryIPPort5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort5G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey5G3" type="text" name="PrimaryIPKey5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey5G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP5G3" type="text" name="SecondIP5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP5G3']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort5G3" type="text" name="SecondIPPort5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort5G3']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey5G3" type="text" name="SecondIPKey5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey5G3']])%>" />
+						</td>
+					</tr>
+
+					<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+						<td class="tabWidthFont80" >
+							<input id="ApESSID5G4" type="text" name="ApESSID5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApESSID5G4']])%>" style="width:100%" />
+						</td>
+						<td class="tabWidthFont40">
+							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G4"]] == "true") then	%>
+							<input id="ApHideSSID5G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G4" checked="checked" />
+							<%	else	%>
+							<input id="ApHideSSID5G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G4" />
+							<%	end	%>
+							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApSecurityMode5G4" name="ApSecurityMode5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G4']])%>" onclick="fSecurityMode('ApSecurityMode5G4');" >
+							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							</select>
+						</td>
+						<td class="tabWidthFont100" >
+							<select id="ApIndexCipher5G4" name="ApIndexCipher5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G4']])%>" >
+							<option id="cbi-network-wan-proto-static" value="1">auto</option>
+							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							</select>
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="ApKey5G4" type="text" name="ApKey5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApKey5G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIP5G4" type="text" name="PrimaryIP5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIP5G4']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="PrimaryIPPort5G4" type="text" name="PrimaryIPPort5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPPort5G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="PrimaryIPKey5G4" type="text" name="PrimaryIPKey5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['PrimaryIPKey5G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIP5G4" type="text" name="SecondIP5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIP5G4']])%>" />
+						</td>
+						<td class="tabWidthFont40" >
+							<input id="SecondIPPort5G4" type="text" name="SecondIPPort5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPPort5G4']])%>" />
+						</td>
+						<td class="tabWidthFont80" >
+							<input id="SecondIPKey5G4" type="text" name="SecondIPKey5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['SecondIPKey5G4']])%>" />
+						</td>
+					</tr>
+
+				</table>
+			</div>
+			</fieldset>
+
+		</div>
+<!--
+		<div id="tab4" style="display:none">
+			<p>
+			<br />
+			<label>Time zone</label>
+			<select name="zone" value="2">
+			<option value="1">UTC</option>
+			<option value="2">China</option>
+			</select>
+			</p>
+
+			<p>
+			<input type="text" name="redir41" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir42" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir43" value="<%=pcdata(stra)%>" />
+			</p>
+		</div>
+-->
+	</fieldset>
+	</fieldset>
+
+
+</div>
+	
+<div style="text-align:right">
+			<!--
+			<input type="text" name="redir" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir1" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir2" value="<%=pcdata(stra)%>" />
+			<input type="text" name="apInfo1" value="<%=pcdata(stra)%>" />
+			<input type="text" name="apName1" value="<%=pcdata(stra)%>" />
+			-->
+
+			<input class="cbi-button cbi-button-save" type="submit" value="<%:Save%>" />
+</div>
+</form>
+
+<script>
+//<![CDATA[
+function fDhcpEnable(arg) {
+  var dhcp_ebl=document.getElementById(arg);
+  var status=dhcp_ebl.checked;
+  if(arg == "ApDhcpEnable")
+  {
+    if(status) 
+    {
+      document.getElementById("ApIpAddress").disabled=true;
+      document.getElementById("ApNetmask").disabled=true;
+      document.getElementById("ApGateway").disabled=true;
+    }
+    else
+    {
+      document.getElementById("ApIpAddress").disabled=false;
+      // document.getElementById("dhcp_IPAdd").setAttribute('disabled',false);
+      document.getElementById("ApNetmask").disabled=false;
+      document.getElementById("ApGateway").disabled=false;
+    }
+  }
+  else if(arg == "ApScanStatus")
+  {
+    if(status) 
+    {
+      document.getElementById("ApScanInterval").disabled=false;
+    }
+    else
+    {
+      document.getElementById("ApScanInterval").disabled=true;
+    }
+  }
+}
+
+function f24G5GEnable(arg)
+{
+  var varEnable=document.getElementById(arg);
+  var chkStatus=varEnable.checked;
+  if (arg == "Ap2.4GEnable")
+  {
+    if(chkStatus)
+    {
+      document.getElementById("ApClientNumber2.4G").disabled=false;
+      document.getElementById("ApHTMode2.4G").disabled=false;
+      document.getElementById("ApTransmitPower2.4G").disabled=false;
+      document.getElementById("ApMode2.4G").disabled=false;
+      document.getElementById("ApChannel2.4G").disabled=false;
+      document.getElementById("ApFragmentation2.4G").disabled=false;
+      document.getElementById("ApRTSCTS2.4G").disabled=false;
+      document.getElementById("ApESSID2.4G1").disabled=false;
+      document.getElementById("ApHideSSID2.4G1").disabled=false;
+      document.getElementById("ApSecurityMode2.4G1").disabled=false;
+      document.getElementById("ApIndexCipher2.4G1").disabled=false;
+      document.getElementById("ApKey2.4G1").disabled=false;
+      document.getElementById("ApESSID2.4G2").disabled=false;
+      document.getElementById("ApHideSSID2.4G2").disabled=false;
+      document.getElementById("ApSecurityMode2.4G2").disabled=false;
+      document.getElementById("ApIndexCipher2.4G2").disabled=false;
+      document.getElementById("ApKey2.4G2").disabled=false;
+      document.getElementById("ApESSID2.4G3").disabled=false;
+      document.getElementById("ApHideSSID2.4G3").disabled=false;
+      document.getElementById("ApSecurityMode2.4G3").disabled=false;
+      document.getElementById("ApIndexCipher2.4G3").disabled=false;
+      document.getElementById("ApKey2.4G3").disabled=false;
+      document.getElementById("ApESSID2.4G4").disabled=false;
+      document.getElementById("ApHideSSID2.4G4").disabled=false;
+      document.getElementById("ApSecurityMode2.4G4").disabled=false;
+      document.getElementById("ApIndexCipher2.4G4").disabled=false;
+      document.getElementById("ApKey2.4G4").disabled=false;
+
+      fSecurityMode('ApSecurityMode2.4G1');
+      fSecurityMode('ApSecurityMode2.4G2');
+      fSecurityMode('ApSecurityMode2.4G3');
+      fSecurityMode('ApSecurityMode2.4G4');
+    }
+    else
+    {
+      document.getElementById("ApClientNumber2.4G").disabled=true;
+      document.getElementById("ApHTMode2.4G").disabled=true;
+      document.getElementById("ApTransmitPower2.4G").disabled=true;
+      document.getElementById("ApMode2.4G").disabled=true;
+      document.getElementById("ApChannel2.4G").disabled=true;
+      document.getElementById("ApFragmentation2.4G").disabled=true;
+      document.getElementById("ApRTSCTS2.4G").disabled=true;
+      document.getElementById("ApESSID2.4G1").disabled=true;
+      document.getElementById("ApHideSSID2.4G1").disabled=true;
+      document.getElementById("ApSecurityMode2.4G1").disabled=true;
+      document.getElementById("ApIndexCipher2.4G1").disabled=true;
+      document.getElementById("ApKey2.4G1").disabled=true;
+      document.getElementById("ApESSID2.4G2").disabled=true;
+      document.getElementById("ApHideSSID2.4G2").disabled=true;
+      document.getElementById("ApSecurityMode2.4G2").disabled=true;
+      document.getElementById("ApIndexCipher2.4G2").disabled=true;
+      document.getElementById("ApKey2.4G2").disabled=true;
+      document.getElementById("ApESSID2.4G3").disabled=true;
+      document.getElementById("ApHideSSID2.4G3").disabled=true;
+      document.getElementById("ApSecurityMode2.4G3").disabled=true;
+      document.getElementById("ApIndexCipher2.4G3").disabled=true;
+      document.getElementById("ApKey2.4G3").disabled=true;
+      document.getElementById("ApESSID2.4G4").disabled=true;
+      document.getElementById("ApHideSSID2.4G4").disabled=true;
+      document.getElementById("ApSecurityMode2.4G4").disabled=true;
+      document.getElementById("ApIndexCipher2.4G4").disabled=true;
+      document.getElementById("ApKey2.4G4").disabled=true;
+
+
+      fSecurityMode('ApSecurityMode2.4G1', true);
+      fSecurityMode('ApSecurityMode2.4G2', true);
+      fSecurityMode('ApSecurityMode2.4G3', true);
+      fSecurityMode('ApSecurityMode2.4G4', true);
+    }
+  }
+  else if (arg == "Ap5GEnable")
+  {
+    if(chkStatus)
+    {
+      document.getElementById("ApClientNumber5G").disabled=false;
+      document.getElementById("ApHTMode5G").disabled=false;
+      document.getElementById("ApTransmitPower5G").disabled=false;
+      document.getElementById("ApMode5G").disabled=false;
+      document.getElementById("ApChannel5G").disabled=false;
+      document.getElementById("ApFragmentation5G").disabled=false;
+      document.getElementById("ApRTSCTS5G").disabled=false;
+      document.getElementById("ApESSID5G1").disabled=false;
+      document.getElementById("ApHideSSID5G1").disabled=false;
+      document.getElementById("ApSecurityMode5G1").disabled=false;
+      document.getElementById("ApIndexCipher5G1").disabled=false;
+      document.getElementById("ApKey5G1").disabled=false;
+      document.getElementById("ApESSID5G2").disabled=false;
+      document.getElementById("ApHideSSID5G2").disabled=false;
+      document.getElementById("ApSecurityMode5G2").disabled=false;
+      document.getElementById("ApIndexCipher5G2").disabled=false;
+      document.getElementById("ApKey5G2").disabled=false;
+      document.getElementById("ApESSID5G3").disabled=false;
+      document.getElementById("ApHideSSID5G3").disabled=false;
+      document.getElementById("ApSecurityMode5G3").disabled=false;
+      document.getElementById("ApIndexCipher5G3").disabled=false;
+      document.getElementById("ApKey5G3").disabled=false;
+      document.getElementById("ApESSID5G4").disabled=false;
+      document.getElementById("ApHideSSID5G4").disabled=false;
+      document.getElementById("ApSecurityMode5G4").disabled=false;
+      document.getElementById("ApIndexCipher5G4").disabled=false;
+      document.getElementById("ApKey5G4").disabled=false;
+
+      fSecurityMode('ApSecurityMode5G1');
+      fSecurityMode('ApSecurityMode5G2');
+      fSecurityMode('ApSecurityMode5G3');
+      fSecurityMode('ApSecurityMode5G4');
+    }
+    else
+    {
+      document.getElementById("ApClientNumber5G").disabled=true;
+      document.getElementById("ApHTMode5G").disabled=true;
+      document.getElementById("ApTransmitPower5G").disabled=true;
+      document.getElementById("ApMode5G").disabled=true;
+      document.getElementById("ApChannel5G").disabled=true;
+      document.getElementById("ApFragmentation5G").disabled=true;
+      document.getElementById("ApRTSCTS5G").disabled=true;
+      document.getElementById("ApESSID5G1").disabled=true;
+      document.getElementById("ApHideSSID5G1").disabled=true;
+      document.getElementById("ApSecurityMode5G1").disabled=true;
+      document.getElementById("ApIndexCipher5G1").disabled=true;
+      document.getElementById("ApKey5G1").disabled=true;
+      document.getElementById("ApESSID5G2").disabled=true;
+      document.getElementById("ApHideSSID5G2").disabled=true;
+      document.getElementById("ApSecurityMode5G2").disabled=true;
+      document.getElementById("ApIndexCipher5G2").disabled=true;
+      document.getElementById("ApKey5G2").disabled=true;
+      document.getElementById("ApESSID5G3").disabled=true;
+      document.getElementById("ApHideSSID5G3").disabled=true;
+      document.getElementById("ApSecurityMode5G3").disabled=true;
+      document.getElementById("ApIndexCipher5G3").disabled=true;
+      document.getElementById("ApKey5G3").disabled=true;
+      document.getElementById("ApESSID5G4").disabled=true;
+      document.getElementById("ApHideSSID5G4").disabled=true;
+      document.getElementById("ApSecurityMode5G4").disabled=true;
+      document.getElementById("ApIndexCipher5G4").disabled=true;
+      document.getElementById("ApKey5G4").disabled=true;
+
+      fSecurityMode('ApSecurityMode5G1', true);
+      fSecurityMode('ApSecurityMode5G2', true);
+      fSecurityMode('ApSecurityMode5G3', true);
+      fSecurityMode('ApSecurityMode5G4', true);
+    }
+  }
+}
+
+function fSecurityMode(arg, disbl)
+{
+  var securityModeSe=document.getElementById(arg);
+  var seValue=securityModeSe.value;
+  if (arg == "ApSecurityMode2.4G1")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    {
+      console.log('ok');
+      document.getElementById("PrimaryIP2.4G1").disabled=false;
+      document.getElementById("PrimaryIPPort2.4G1").disabled=false;
+      document.getElementById("PrimaryIPKey2.4G1").disabled=false;
+      document.getElementById("SecondIP2.4G1").disabled=false;
+      document.getElementById("SecondIPPort2.4G1").disabled=false;
+      document.getElementById("SecondIPKey2.4G1").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP2.4G1").disabled=true;
+      document.getElementById("PrimaryIPPort2.4G1").disabled=true;
+      document.getElementById("PrimaryIPKey2.4G1").disabled=true;
+      document.getElementById("SecondIP2.4G1").disabled=true;
+      document.getElementById("SecondIPPort2.4G1").disabled=true;
+      document.getElementById("SecondIPKey2.4G1").disabled=true;
+    }
+  }
+  else if(arg == "ApSecurityMode2.4G2")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    {
+      document.getElementById("PrimaryIP2.4G2").disabled=false;
+      document.getElementById("PrimaryIPPort2.4G2").disabled=false;
+      document.getElementById("PrimaryIPKey2.4G2").disabled=false;
+      document.getElementById("SecondIP2.4G2").disabled=false;
+      document.getElementById("SecondIPPort2.4G2").disabled=false;
+      document.getElementById("SecondIPKey2.4G2").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP2.4G2").disabled=true;
+      document.getElementById("PrimaryIPPort2.4G2").disabled=true;
+      document.getElementById("PrimaryIPKey2.4G2").disabled=true;
+      document.getElementById("SecondIP2.4G2").disabled=true;
+      document.getElementById("SecondIPPort2.4G2").disabled=true;
+      document.getElementById("SecondIPKey2.4G2").disabled=true;
+    }
+  }
+  else if(arg == "ApSecurityMode2.4G3")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    {
+      document.getElementById("PrimaryIP2.4G3").disabled=false;
+      document.getElementById("PrimaryIPPort2.4G3").disabled=false;
+      document.getElementById("PrimaryIPKey2.4G3").disabled=false;
+      document.getElementById("SecondIP2.4G3").disabled=false;
+      document.getElementById("SecondIPPort2.4G3").disabled=false;
+      document.getElementById("SecondIPKey2.4G3").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP2.4G3").disabled=true;
+      document.getElementById("PrimaryIPPort2.4G3").disabled=true;
+      document.getElementById("PrimaryIPKey2.4G3").disabled=true;
+      document.getElementById("SecondIP2.4G3").disabled=true;
+      document.getElementById("SecondIPPort2.4G3").disabled=true;
+      document.getElementById("SecondIPKey2.4G3").disabled=true;
+    }
+  }
+  else if(arg == "ApSecurityMode2.4G4")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    {
+      document.getElementById("PrimaryIP2.4G4").disabled=false;
+      document.getElementById("PrimaryIPPort2.4G4").disabled=false;
+      document.getElementById("PrimaryIPKey2.4G4").disabled=false;
+      document.getElementById("SecondIP2.4G4").disabled=false;
+      document.getElementById("SecondIPPort2.4G4").disabled=false;
+      document.getElementById("SecondIPKey2.4G4").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP2.4G4").disabled=true;
+      document.getElementById("PrimaryIPPort2.4G4").disabled=true;
+      document.getElementById("PrimaryIPKey2.4G4").disabled=true;
+      document.getElementById("SecondIP2.4G4").disabled=true;
+      document.getElementById("SecondIPPort2.4G4").disabled=true;
+      document.getElementById("SecondIPKey2.4G4").disabled=true;
+    }
+  }
+  else if (arg == "ApSecurityMode5G1")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    {
+
+      document.getElementById("PrimaryIP5G1").disabled=false;
+      document.getElementById("PrimaryIPPort5G1").disabled=false;
+      document.getElementById("PrimaryIPKey5G1").disabled=false;
+      document.getElementById("SecondIP5G1").disabled=false;
+      document.getElementById("SecondIPPort5G1").disabled=false;
+      document.getElementById("SecondIPKey5G1").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP5G1").disabled=true;
+      document.getElementById("PrimaryIPPort5G1").disabled=true;
+      document.getElementById("PrimaryIPKey5G1").disabled=true;
+      document.getElementById("SecondIP5G1").disabled=true;
+      document.getElementById("SecondIPPort5G1").disabled=true;
+      document.getElementById("SecondIPKey5G1").disabled=true;
+    }
+  }
+  else if (arg == "ApSecurityMode5G2")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    {
+
+      document.getElementById("PrimaryIP5G2").disabled=false;
+      document.getElementById("PrimaryIPPort5G2").disabled=false;
+      document.getElementById("PrimaryIPKey5G2").disabled=false;
+      document.getElementById("SecondIP5G2").disabled=false;
+      document.getElementById("SecondIPPort5G2").disabled=false;
+      document.getElementById("SecondIPKey5G2").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP5G2").disabled=true;
+      document.getElementById("PrimaryIPPort5G2").disabled=true;
+      document.getElementById("PrimaryIPKey5G2").disabled=true;
+      document.getElementById("SecondIP5G2").disabled=true;
+      document.getElementById("SecondIPPort5G2").disabled=true;
+      document.getElementById("SecondIPKey5G2").disabled=true;
+    }
+  }
+  else if (arg == "ApSecurityMode5G3")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    {
+
+      document.getElementById("PrimaryIP5G3").disabled=false;
+      document.getElementById("PrimaryIPPort5G3").disabled=false;
+      document.getElementById("PrimaryIPKey5G3").disabled=false;
+      document.getElementById("SecondIP5G3").disabled=false;
+      document.getElementById("SecondIPPort5G3").disabled=false;
+      document.getElementById("SecondIPKey5G3").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP5G3").disabled=true;
+      document.getElementById("PrimaryIPPort5G3").disabled=true;
+      document.getElementById("PrimaryIPKey5G3").disabled=true;
+      document.getElementById("SecondIP5G3").disabled=true;
+      document.getElementById("SecondIPPort5G3").disabled=true;
+      document.getElementById("SecondIPKey5G3").disabled=true;
+    }
+  }
+  else if (arg == "ApSecurityMode5G4")
+  {
+    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    {
+
+      document.getElementById("PrimaryIP5G4").disabled=false;
+      document.getElementById("PrimaryIPPort5G4").disabled=false;
+      document.getElementById("PrimaryIPKey5G4").disabled=false;
+      document.getElementById("SecondIP5G4").disabled=false;
+      document.getElementById("SecondIPPort5G4").disabled=false;
+      document.getElementById("SecondIPKey5G4").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP5G4").disabled=true;
+      document.getElementById("PrimaryIPPort5G4").disabled=true;
+      document.getElementById("PrimaryIPKey5G4").disabled=true;
+      document.getElementById("SecondIP5G4").disabled=true;
+      document.getElementById("SecondIPPort5G4").disabled=true;
+      document.getElementById("SecondIPKey5G4").disabled=true;
+    }
+  }
+}
+
+function fSetSelectItem()
+{
+
+  var x;
+  x = document.getElementById("ApHTMode2.4G");
+  <% if (cmdElemValue[revCmdElemString["ApHTMode2.4G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApHTMode2.4G"]])%>;
+  <% end %>
+  x = document.getElementById("ApTransmitPower2.4G");
+  <% if (cmdElemValue[revCmdElemString["ApTransmitPower2.4G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApTransmitPower2.4G"]])%>;
+  <% end %>
+  x = document.getElementById("ApMode2.4G");
+  <% if (cmdElemValue[revCmdElemString["ApMode2.4G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApMode2.4G"]])%>;
+  <% end %>
+  x = document.getElementById("ApChannel2.4G");
+  <% if (cmdElemValue[revCmdElemString["ApChannel2.4G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApChannel2.4G"]])%>;
+  <% end %>
+//set 2.4G 1
+  x = document.getElementById("ApSecurityMode2.4G1");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G1"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G1"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher2.4G1");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G1"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G1"]])%>;
+  <% end %>
+//set 2.4G 2
+  x = document.getElementById("ApSecurityMode2.4G2");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G2"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G2"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher2.4G2");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G2"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G2"]])%>;
+  <% end %>
+//set 2.4G 3
+  x = document.getElementById("ApSecurityMode2.4G3");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G3"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G3"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher2.4G3");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G3"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G3"]])%>;
+  <% end %>
+//set 2.4G 4
+  x = document.getElementById("ApSecurityMode2.4G4");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G4"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G4"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher2.4G4");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G4"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G4"]])%>;
+  <% end %>
+
+  x = document.getElementById("ApHTMode5G");
+  <% if (cmdElemValue[revCmdElemString["ApHTMode5G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApHTMode5G"]])%>;
+  <% end %>
+  x = document.getElementById("ApTransmitPower5G");
+  <% if (cmdElemValue[revCmdElemString["ApTransmitPower5G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApTransmitPower5G"]])%>;
+  <% end %>
+  x = document.getElementById("ApMode5G");
+  <% if (cmdElemValue[revCmdElemString["ApMode5G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApMode5G"]])%>;
+  <% end %>
+  x = document.getElementById("ApChannel5G");
+  <% if (cmdElemValue[revCmdElemString["ApChannel5G"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApChannel5G"]])%>;
+  <% end %>
+  //set 5G 1
+  x = document.getElementById("ApSecurityMode5G1");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G1"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G1"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher5G1");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G1"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G1"]])%>;
+  <% end %>
+  //set 5G2
+  x = document.getElementById("ApSecurityMode5G2");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G2"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G2"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher5G2");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G2"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G2"]])%>;
+  <% end %>
+  //set 5G3
+  x = document.getElementById("ApSecurityMode5G3");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G3"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G3"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher5G3");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G3"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G3"]])%>;
+  <% end %>
+  //set 5G4
+  x = document.getElementById("ApSecurityMode5G4");
+  <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G4"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G4"]])%>;
+  <% end %>
+  x = document.getElementById("ApIndexCipher5G4");
+  <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G4"]]) then%>
+  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G4"]])%>;
+  <% end %>
+}
+
+fSetSelectItem();
+fDhcpEnable("ApDhcpEnable");
+fDhcpEnable("ApScanStatus");
+f24G5GEnable("Ap2.4GEnable");
+f24G5GEnable("Ap5GEnable");
+//]]>
+</script>
+<%+footer%>

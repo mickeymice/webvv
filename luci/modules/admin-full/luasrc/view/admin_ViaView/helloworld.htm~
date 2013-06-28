@@ -1,0 +1,109 @@
+<%+header%>
+
+<%
+	--get message from AC-app
+	local preamble = "viamanag"
+	local commID   = 0x501D
+	local cmdLen   = nil
+
+	local socket = require"socket"
+	local host   = "localhost"
+	local port   = "8383"
+	local data, err = socket.connect(host, port)
+	if not data then
+		--fail(err)
+	else
+		data:setoption("tcp-nodelay", true)
+		data:settimeout(10)
+		data:send("shuang shuang tset \n")	
+		data:close()
+		--pass("connected!")
+	end
+
+	str1 = luci.http.formvalue("redir")
+
+	stra = "Shuant Test"
+%>
+
+<style type="text/css">
+ul
+{
+float:left;
+width:100%;
+padding:0;
+margin:0;
+list-style-type:none;
+}
+a
+{
+float:left;
+width:7em;
+text-decoration:none;
+color:white;
+background-color:purple;
+padding:0.2em 0.6em;
+border-right:1px solid white;
+}
+a:hover {background-color:#ff3300}
+li{display:inline}
+</style>
+
+<!--
+<style>
+ form li{display:inline-block;border-right:2px solid #000;}
+</style>
+-->
+
+<h1><%:Hello World%></h1>
+<h1><%=controller%></h1>
+
+
+	<div style="text-align:right">
+
+		<form class="inline" method="get" action="<%=controller%>/admin/uci/save1">
+			
+			<fieldset style="text-align:left">
+				<legend>System Properties</legend>
+				<!--
+				<ul>
+                                   <li><a>General Setttings</a></li>
+                                    <li><a href="#" id="Gaaa" onclick="document.getElementById('hidden').style.display='none';">Gaaaa</a></li>
+               			 <li><a>cccccccccc</a></li>
+				</ul>
+				-->
+				<ul>
+				<li><a href="#">Link one</a></li>
+				<li><a href="#">Link two</a></li>
+				<li><a href="#">Link three</a></li>
+				<li><a href="#">Link four</a></li>
+				</ul>
+				<p>
+     				<label>Local Time</label>
+                                <input name="localTime" />
+  				</p>
+				<p id="hidden">
+				<label>Hostname</label>
+				<input name="hostname" />
+				</p>
+				<p>
+				<label>Timezone</label>
+				<select name="zone">
+					<option value="1">UTC</option>
+					<option value="2">China</option>
+				</select>
+				</p>
+			</fieldset>
+        
+			<input type="text" name="redir" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir1" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir2" value="<%=pcdata(stra)%>" />
+			<input type="text" name="apInfo1" value="<%=pcdata(stra)%>" />
+			<input type="text" name="apName1" value="<%=pcdata(stra)%>" />
+
+			<input class="cbi-button cbi-button-save" type="submit" value="<%:Rock%>" />
+		</form>
+
+
+	</div>
+
+<%+footer%>

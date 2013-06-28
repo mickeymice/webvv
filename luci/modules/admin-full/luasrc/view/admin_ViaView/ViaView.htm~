@@ -1,0 +1,21 @@
+<%+header%>
+<% local ice_cream = luci.model.uci.cursor():get("ice_cream", "tub", "flavor") %>
+
+<% local eating = luci.model.uci.cursor():get("current", "ice", "flavor") %>
+
+<div class="cbi-map" id="cbi-ice_cream">
+<h2><a id="content" name="content">Ice Cream Information</a></h2>
+<div class="cbi-map-descr">This is the selected ice cream flavor</div>
+<fieldset class="cbi-section" id="cbi-ice_cream-flavor">
+	<legend>Ice Cream Flavor</legend>
+	<div class="cbi-section-descr"></div>
+<ul><li>&nbsp;Flavor <%=eating%></li></ul>
+</fieldset>
+<br></br>
+<div class="cbi-map-descr">These are the available flavors at your location</div>
+<fieldset class="cbi-section" id="cbi-ice_cream-flavor>
+	<legend>Available Ice Cream Flavor</legend>
+	<div class="cbi-section-descr"></div>
+<ul><li>&nbsp;<%= table.concat(ice_cream, "</li><br /><li>&nbsp;") %></li></ul></fieldset>
+</div>
+<%+footer%>

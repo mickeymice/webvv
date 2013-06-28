@@ -1,0 +1,607 @@
+<?xml version="1.0"?>
+<!DOCTYPE html
+PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html>
+<head>
+</head>
+<body>
+<script>
+<![CDATA[
+function fDhcpEnable(arg) {
+  var dhcp_ebl=document.getElementById(arg);
+  var status=dhcp_ebl.checked;
+  if(arg == "ApDhcpDisable")
+  {
+    if(status) 
+    {
+      document.getElementById("ApIpAddress").disabled=true;
+      document.getElementById("ApNetmask").disabled=true;
+      document.getElementById("ApGateway").disabled=true;
+    }
+    else
+    {
+      document.getElementById("ApIpAddress").disabled=false;
+      // document.getElementById("dhcp_IPAdd").setAttribute('disabled',false);
+      document.getElementById("ApNetmask").disabled=false;
+      document.getElementById("ApGateway").disabled=false;
+    }
+  }
+  else if(arg == "ApScanStatus")
+  {
+    if(status) 
+    {
+      document.getElementById("ApScanInterval").disabled=false;
+    }
+    else
+    {
+      document.getElementById("ApScanInterval").disabled=true;
+    }
+  }
+}
+function f24G5GEnable(arg)
+{
+  var varEnable=document.getElementById(arg);
+  var chkStatus=varEnable.checked;
+  if (arg == "Ap2.4GEnable")
+  {
+    if(chkStatus)
+    {
+      document.getElementById("ApClientNumber2.4G").disabled=false;
+      document.getElementById("ApHTMode2.4G").disabled=false;
+      document.getElementById("ApTransmitPower2.4G").disabled=false;
+      document.getElementById("ApMode2.4G").disabled=false;
+      document.getElementById("ApChannel2.4G").disabled=false;
+      document.getElementById("ApFragmentation2.4G").disabled=false;
+      document.getElementById("ApRTSCTS2.4G").disabled=false;
+      document.getElementById("ApESSID2.4G").disabled=false;
+      document.getElementById("ApHideSSID2.4G").disabled=false;
+      document.getElementById("ApSecurityMode2.4G").disabled=false;
+      document.getElementById("ApIndexCipher2.4G").disabled=false;
+      document.getElementById("ApKey5G").disabled=false;
+
+      fSecurityMode('ApSecurityMode2.4G');
+    }
+    else
+    {
+      document.getElementById("ApClientNumber2.4G").disabled=true;
+      document.getElementById("ApHTMode2.4G").disabled=true;
+      document.getElementById("ApTransmitPower2.4G").disabled=true;
+      document.getElementById("ApMode2.4G").disabled=true;
+      document.getElementById("ApChannel2.4G").disabled=true;
+      document.getElementById("ApFragmentation2.4G").disabled=true;
+      document.getElementById("ApRTSCTS2.4G").disabled=true;
+      document.getElementById("ApESSID2.4G").disabled=true;
+      document.getElementById("ApHideSSID2.4G").disabled=true;
+      document.getElementById("ApSecurityMode2.4G").disabled=true;
+      document.getElementById("ApIndexCipher2.4G").disabled=true;
+      document.getElementById("ApKey2.4G").disabled=true;
+
+      fSecurityMode('ApSecurityMode2.4G', true);
+    }
+  }
+  else if (arg == "Ap5GEnable")
+  {
+    if(chkStatus)
+    {
+      document.getElementById("ApClientNumber5G").disabled=false;
+      document.getElementById("ApHTMode5G").disabled=false;
+      document.getElementById("ApTransmitPower5G").disabled=false;
+      document.getElementById("ApMode5G").disabled=false;
+      document.getElementById("ApChannel5G").disabled=false;
+      document.getElementById("ApFragmentation5G").disabled=false;
+      document.getElementById("ApRTSCTS5G").disabled=false;
+      document.getElementById("ApESSID5G").disabled=false;
+      document.getElementById("ApHideSSID5G").disabled=false;
+      document.getElementById("ApSecurityMode5G").disabled=false;
+      document.getElementById("ApIndexCipher5G").disabled=true;
+      document.getElementById("ApKey2.4G").disabled=false;
+
+      fSecurityMode('ApSecurityMode5G');
+    }
+    else
+    {
+      document.getElementById("ApClientNumber5G").disabled=true;
+      document.getElementById("ApHTMode5G").disabled=true;
+      document.getElementById("ApTransmitPower5G").disabled=true;
+      document.getElementById("ApMode5G").disabled=true;
+      document.getElementById("ApChannel5G").disabled=true;
+      document.getElementById("ApFragmentation5G").disabled=true;
+      document.getElementById("ApRTSCTS5G").disabled=true;
+      document.getElementById("ApESSID5G").disabled=true;
+      document.getElementById("ApHideSSID5G").disabled=true;
+      document.getElementById("ApSecurityMode5G").disabled=true;
+      document.getElementById("ApIndexCipher5G").disabled=true;
+      document.getElementById("ApKey5G").disabled=true;
+
+      fSecurityMode('ApSecurityMode5G', true);
+    }
+  }
+}
+function fSecurityMode(arg, disbl)
+{
+  var securityModeSe=document.getElementById(arg);
+  var seValue=securityModeSe.value;
+  if (arg == "ApSecurityMode2.4G")
+  {
+    //if ((seValue == "3"||seValue == "4") && (disbl!==true))
+    if(1&&2)console.log('ok');
+    if(1)
+    {
+      document.getElementById("PrimaryIP2.4G").disabled=false;
+      document.getElementById("PrimaryIPPort2.4G").disabled=false;
+      document.getElementById("PrimaryIPKey2.4G").disabled=false;
+      document.getElementById("SecondIP2.4G").disabled=false;
+      document.getElementById("SecondIPPort2.4G").disabled=false;
+      document.getElementById("SecondIPKey2.4G").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP2.4G").disabled=true;
+      document.getElementById("PrimaryIPPort2.4G").disabled=true;
+      document.getElementById("PrimaryIPKey2.4G").disabled=true;
+      document.getElementById("SecondIP2.4G").disabled=true;
+      document.getElementById("SecondIPPort2.4G").disabled=true;
+      document.getElementById("SecondIPKey2.4G").disabled=true;
+    }
+  }
+  else if (arg == "ApSecurityMode5G")
+  {
+    //if (!(seValue == "3"||seValue == "4") || (disbl==true))
+    if(1)
+    {
+
+      document.getElementById("PrimaryIP5G").disabled=false;
+      document.getElementById("PrimaryIPPort5G").disabled=false;
+      document.getElementById("PrimaryIPKey5G").disabled=false;
+      document.getElementById("SecondIP5G").disabled=false;
+      document.getElementById("SecondIPPort5G").disabled=false;
+      document.getElementById("SecondIPKey5G").disabled=false;
+    }
+    else
+    {
+      document.getElementById("PrimaryIP5G").disabled=true;
+      document.getElementById("PrimaryIPPort5G").disabled=true;
+      document.getElementById("PrimaryIPKey5G").disabled=true;
+      document.getElementById("SecondIP5G").disabled=true;
+      document.getElementById("SecondIPPort5G").disabled=true;
+      document.getElementById("SecondIPKey5G").disabled=true;
+    }
+  }
+}
+]]>
+</script>
+
+<form class="inline" method="get" action="<%=controller%>/admin/uci/ApConfSave">
+
+<div class="cbi-map" id="cbi-dhcp">
+	<h2><a id="content" name="content">AP Configuration</a></h2>
+	<div class="cbi-map-descr">Set AP's IP <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr>-Server <abbr title="Service Set Identifier">SSID </abbr>and 2.4G/5G wireless attribute </div>
+	<fieldset class="cbi-section" id="cbi-dhcp-dnsmasq">
+	<legend>Ap Configuraion</legend>
+	<div class="cbi-section-descr"></div>
+
+	<ul class="cbi-tabmenu">
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='block';document.getElementById('tab2').style.display='none';document.getElementById('tab3').style.display='none';">Base Information</a></li>
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='none';document.getElementById('tab2').style.display='block';document.getElementById('tab3').style.display='none';">2.4G configuration</a></li>
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='none';document.getElementById('tab2').style.display='none';document.getElementById('tab3').style.display='block';">5G configuraion</a></li>
+<!--
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tab1').style.display='none';document.getElementById('tab2').style.display='none';document.getElementById('tab3').style.display='none';document.getElementById('tab4').style.display='block'">Base Information</a></li>
+-->
+	</ul>
+	<fieldset class="cbi-section-node cbi-section-node-tabbed">
+		<div class="cbi-tabcontainer">
+		<div id="tab1" style="border:1px solid #ccc">
+
+			<div class="cbi-value"><label class="cbi-value-title">DHCP Enable</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<input id="ApDhcpDisable" class="cbi-input-checkbox" type="checkbox" name="ApDhcpDisable"  onclick="fDhcpEnable('ApDhcpDisable');" />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Enable this AP's  <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr> function in the local network
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Scan Status</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<input id="ApScanStatus" class="cbi-input-checkbox" type="checkbox" name="ApScanStatus" value="1" checked="checked" onclick="fDhcpEnable('ApScanStatus');" />
+				<label>Scan Interval (5~65535)</label>
+				<input id="ApScanInterval" type="text" name="ApScanInterval" value="7200" style="width:50px" />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Disable enable AP scan function and set scan interval if enable
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">IP Address</label>
+			<div class="cbi-value-field">
+				<input id="ApIpAddress" type="text" class="cbi-input-text" name="ApIpAddress" value="192.168.1.1"/>
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			User can modify this AP's IP address
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Netmask</label>
+			<div class="cbi-value-field">
+				<input id="ApNetmask" type="text" class="cbi-input-text" name="ApNetmask" value="255.255.255.0"/>
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			User can modify this AP's Netmask
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Gateway</label>
+			<div class="cbi-value-field">
+				<input id="ApGateway" type="text" class="cbi-input-text" name="ApGateway" value="192.168.1.254"/>
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			User can modify this AP's Gateway
+			</div></div></div>
+
+
+		</div></div>
+
+		<div class="cbi-tabcontainer">
+		<div id="tab2" style="display:none">
+
+			<div class="cbi-value"><label class="cbi-value-title">Enable 2.4G Mode</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1" />
+				<input id="Ap2.4GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap2.4GEnable" value="1" checked="checked" onclick="f24G5GEnable('Ap2.4GEnable');" />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Enable this AP's wifi 2.4G mode
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Client Number</label>
+			<div class="cbi-value-field">
+				<input id="ApClientNumber2.4G" type="text" class="cbi-input-text" name="ApClientNumber2.4G" value="100"/>
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			The max number of client connect this AP
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">HT Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApHTMode2.4G" class="cbi-input-select" name="ApHTMode2.4G" value="1">
+				<option id="cbi-network-wan-proto-static" value="20MHz">20MHz</option>
+				<option id="cbi-network-wan-proto-static" value="40MHzBelow">40MHz 2nd channel below</option>
+				<option id="cbi-network-wan-proto-static" value="40MHzAbove">40MHz 2nd channel above</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Transmit Power</label>
+			<div class="cbi-value-field">
+				<select id="ApTransmitPower2.4G" class="cbi-input-select" name="ApTransmitPower2.4G">
+				<option id="cbi-network-wan-proto-static" value="0">0 dBm(1mW)</option>
+				<option id="cbi-network-wan-proto-static" value="4">4 dBm(2mW)</option>
+				<option id="cbi-network-wan-proto-static" value="5">5 dBm(3mW)</option>
+				<option id="cbi-network-wan-proto-static" value="7">7 dBm(5mW)</option>
+				<option id="cbi-network-wan-proto-static" value="8">8 dBm(6mW)</option>
+				<option id="cbi-network-wan-proto-static" value="9" selected="selected">9 dBm(7mW)</option>
+				<option id="cbi-network-wan-proto-static" value="10">10 dBm(10mW)</option>
+				<option id="cbi-network-wan-proto-static" value="11">11 dBm(12mW)</option>
+				<option id="cbi-network-wan-proto-static" value="12">12 dBm(15mW)</option>
+				<option id="cbi-network-wan-proto-static" value="13">13 dBm(19mW)</option>
+				<option id="cbi-network-wan-proto-static" value="14">14 dBm(25mW)</option>
+				<option id="cbi-network-wan-proto-static" value="15">15 dBm(31mW)</option>
+				<option id="cbi-network-wan-proto-static" value="16">16 dBm(39mW)</option>
+				<option id="cbi-network-wan-proto-static" value="17">17 dBm(50mW)</option>
+				<option id="cbi-network-wan-proto-static" value="18">18 dBm(63mW)</option>
+				<option id="cbi-network-wan-proto-static" value="19">19 dBm(79mW)</option>
+				<option id="cbi-network-wan-proto-static" value="20">20 dBm(100mW)</option>
+				<option id="cbi-network-wan-proto-static" value="21">21 dBm(125mW)</option>
+				<option id="cbi-network-wan-proto-static" value="22">22 dBm(158mW)</option>
+				<option id="cbi-network-wan-proto-static" value="23">23 dBm(199mW)</option>
+				<option id="cbi-network-wan-proto-static" value="24">24 dBm(251mW)</option>
+				<option id="cbi-network-wan-proto-static" value="25">25 dBm(316mW)</option>
+				<option id="cbi-network-wan-proto-static" value="26">26 dBm(398mW)</option>
+				<option id="cbi-network-wan-proto-static" value="27">27 dBm(501mW)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApMode2.4G" class="cbi-input-select" name="ApMode2.4G" value="80211gn">
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="80211b">802.11 b</option>
+				<option id="cbi-network-wan-proto-static" value="80211g">802.11 g</option>
+				<option id="cbi-network-wan-proto-static" value="80211gn">802.11 g+n</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Channel</label>
+			<div class="cbi-value-field">
+				<select id="ApChannel2.4G" class="cbi-input-select" name="ApChannel2.4G" value="11">
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="1">1(2.412GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="2">2(2.417GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="3">3(2.422GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="4">4(2.427GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="5">5(2.432GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="6">6(2.437GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="7">7(2.442GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="8">8(2.447GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="9">9(2.452GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="10">10(2.457GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="11">11(2.462GHz)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Country Code</label>
+			<div class="cbi-value-field">
+				<input type="text" class="cbi-input-text" name="ApCountryCode2.4G" value="US" disabled="disabled"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Fragmentation</label>
+			<div class="cbi-value-field">
+				<input id="ApFragmentation2.4G" type="text" class="cbi-input-text" name="ApFragmentation2.4G" value="1500"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">RTS/CTS</label>
+			<div class="cbi-value-field">
+				<input id="ApRTSCTS2.4G" type="text" class="cbi-input-text" name="ApRTSCTS2.4G" value="2500"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">ESSID</label>
+			<div class="cbi-value-field">
+				<input id="ApESSID2.4G" type="text" class="cbi-input-text" name="ApESSID2.4G" value="VIA2.4G"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Hide SSID</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<input id="ApHideSSID2.4G" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G" value="1"/>
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Hide this AP's SSID
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Security Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApSecurityMode2.4G" class="cbi-input-select" name="ApSecurityMode2.4G" onclick="fSecurityMode('ApSecurityMode2.4G');">
+				<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+				<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+				<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+				<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+				<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+				<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Index/Cipher</label>
+			<div class="cbi-value-field">
+				<select id="ApIndexCipher2.4G" class="cbi-input-select" name="ApIndexCipher2.4G" value="2">
+				<option id="cbi-network-wan-proto-static" value="1">auto</option>
+				<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+				<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+				<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Key</label>
+			<div class="cbi-value-field">
+				<input id="ApKey2.4G" type="text" class="cbi-input-text" name="ApKey2.4G" value="123456789"/>
+			</div></div>
+
+			<fieldset class="cbi-section">
+			<legend>Radius Server</legend>
+				<div class="cbi-value"><label class="cbi-value-title">Primary IP</label>
+					<input id="PrimaryIP2.4G" type="text" name="ApRadiusIP5G" value="192.168.1.1" style="width:100px" />
+					<label>Port</label>
+					<input id="PrimaryIPPort2.4G" type="text" name="ApRadiusPort5G" value="1234" style="width:50px"/>
+					<label>Key</label>
+					<input id="PrimaryIPKey2.4G" type="text" name="ApRadiusKey5G" value="123456789" style="width:100px"/>
+				</div>
+				<div class="cbi-value"><label class="cbi-value-title">Second IP</label>
+					<input id="SecondIP2.4G" type="text" name="ApRadiusIP5G" value="192.168.1.1" style="width:100px" />
+					<label>Port</label>
+					<input id="SecondIPPort2.4G" type="text" name="ApRadiusPort5G" value="1234" style="width:50px"/>
+					<label>Key</label>
+					<input id="SecondIPKey2.4G" type="text" name="ApRadiusKey5G" value="123456789" style="width:100px"/>
+				</div>
+			</fieldset>
+
+		</div></div>
+
+		<div id="tab3" style="display:none">
+
+			<div class="cbi-value"><label class="cbi-value-title">Enable 5G Mode</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<input id="Ap5GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap5GEnable" value="1" checked="checked" onclick="f24G5GEnable('Ap5GEnable');" />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Enable this AP's wifi 5G mode
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Client Number</label>
+			<div class="cbi-value-field">
+				<input id="ApClientNumber5G" type="text" class="cbi-input-text" name="ApClientNumber5G" value="100"/>
+				<br />
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			The max number of client connect this AP
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">HT Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApHTMode5G" class="cbi-input-select" name="ApHTMode5G" value="1">
+				<option id="cbi-network-wan-proto-static" value="20MHz">20MHz</option>
+				<option id="cbi-network-wan-proto-static" value="40MHzBelow">40MHz 2nd channel below</option>
+				<option id="cbi-network-wan-proto-static" value="40MHzAbove">40MHz 2nd channel above</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Transmit Power</label>
+			<div class="cbi-value-field">
+				<select id="ApTransmitPower5G" class="cbi-input-select" name="ApTransmitPower5G" value="27">
+				<option id="cbi-network-wan-proto-static" value="0">0 dBm(1mW)</option>
+				<option id="cbi-network-wan-proto-static" value="4">4 dBm(2mW)</option>
+				<option id="cbi-network-wan-proto-static" value="5">5 dBm(3mW)</option>
+				<option id="cbi-network-wan-proto-static" value="7">7 dBm(5mW)</option>
+				<option id="cbi-network-wan-proto-static" value="8">8 dBm(6mW)</option>
+				<option id="cbi-network-wan-proto-static" value="9">9 dBm(7mW)</option>
+				<option id="cbi-network-wan-proto-static" value="10">10 dBm(10mW)</option>
+				<option id="cbi-network-wan-proto-static" value="11">11 dBm(12mW)</option>
+				<option id="cbi-network-wan-proto-static" value="12">12 dBm(15mW)</option>
+				<option id="cbi-network-wan-proto-static" value="13">13 dBm(19mW)</option>
+				<option id="cbi-network-wan-proto-static" value="14">14 dBm(25mW)</option>
+				<option id="cbi-network-wan-proto-static" value="15">15 dBm(31mW)</option>
+				<option id="cbi-network-wan-proto-static" value="16">16 dBm(39mW)</option>
+				<option id="cbi-network-wan-proto-static" value="17">17 dBm(50mW)</option>
+				<option id="cbi-network-wan-proto-static" value="18">18 dBm(63mW)</option>
+				<option id="cbi-network-wan-proto-static" value="19">19 dBm(79mW)</option>
+				<option id="cbi-network-wan-proto-static" value="20">20 dBm(100mW)</option>
+				<option id="cbi-network-wan-proto-static" value="21">21 dBm(125mW)</option>
+				<option id="cbi-network-wan-proto-static" value="22">22 dBm(158mW)</option>
+				<option id="cbi-network-wan-proto-static" value="23">23 dBm(199mW)</option>
+				<option id="cbi-network-wan-proto-static" value="24">24 dBm(251mW)</option>
+				<option id="cbi-network-wan-proto-static" value="25">25 dBm(316mW)</option>
+				<option id="cbi-network-wan-proto-static" value="26">26 dBm(398mW)</option>
+				<option id="cbi-network-wan-proto-static" value="27">27 dBm(501mW)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApMode5G" class="cbi-input-select" name="ApMode5G" value="80211gn">
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="80211b">802.11 a</option>
+				<option id="cbi-network-wan-proto-static" value="80211gn">802.11 a+n</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Channel</label>
+			<div class="cbi-value-field">
+				<select id="ApChannel5G" class="cbi-input-select" name="ApChannel5G" value="11">
+				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="1">36(5.180GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="2">40(5.200GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="3">44(5.220GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="4">48(5.240GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="5">49(5.745GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="6">153(5.765GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="7">157(5.785GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="8">161(5.805GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="9">165(5.825GHz)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Country Code</label>
+			<div class="cbi-value-field">
+				<input type="text" class="cbi-input-text" name="ApCountryCode5G" value="US" disabled="disabled"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Fragmentation</label>
+			<div class="cbi-value-field">
+				<input id="ApFragmentation5G" type="text" class="cbi-input-text" name="ApFragmentation5G" value="1500"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">RTS/CTS</label>
+			<div class="cbi-value-field">
+				<input id="ApRTSCTS5G" type="text" class="cbi-input-text" name="ApRTSCTS5G" value="2500"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">ESSID</label>
+			<div class="cbi-value-field">
+				<input id="ApESSID5G" type="text" class="cbi-input-text" name="ApESSID5G" value="VIA5G"/>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Hide SSID</label>
+			<div class="cbi-value-field">
+				<input type="hidden" value="1"/>
+				<input id="ApHideSSID5G" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G" value="1"/>
+			<div class="cbi-value-description">
+			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
+			Hide this AP's SSID
+			</div></div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Security Mode</label>
+			<div class="cbi-value-field">
+				<select id="ApSecurityMode5G" class="cbi-input-select" name="ApSecurityMode5G" value="1" onclick="fSecurityMode('ApSecurityMode5G');">
+				<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
+				<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
+				<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
+				<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
+				<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
+				<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Index/Cipher</label>
+			<div class="cbi-value-field">
+				<select id="ApIndexCipher5G" class="cbi-input-select" name="ApIndexCipher5G" value="2">
+				<option id="cbi-network-wan-proto-static" value="1">auto</option>
+				<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
+				<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
+				<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+				</select>
+			</div></div>
+
+			<div class="cbi-value"><label class="cbi-value-title">Key</label>
+			<div class="cbi-value-field">
+				<input id="ApKey5G" type="text" class="cbi-input-text" name="ApKey5G" value="123456789"/>
+			</div></div>
+
+			<fieldset class="cbi-section">
+			<legend>Radius Server</legend>
+				<div class="cbi-value"><label class="cbi-value-title">Primary IP</label>
+					<input id="PrimaryIP5G" type="text" name="ApRadiusIP5G" value="192.168.1.1" style="width:100px" />
+					<label>Port</label>
+					<input id="PrimaryIPPort5G" type="text" name="ApRadiusPort5G" value="1234" style="width:50px"/>
+					<label>Key</label>
+					<input id="PrimaryIPKey5G" type="text" name="ApRadiusKey5G" value="123456789" style="width:100px"/>
+				</div>
+				<div class="cbi-value"><label class="cbi-value-title">Second IP</label>
+					<input id="SecondIP5G" type="text" name="ApRadiusIP5G" value="192.168.1.1" style="width:100px" />
+					<label>Port</label>
+					<input id="SecondIPPort5G" type="text" name="ApRadiusPort5G" value="1234" style="width:50px"/>
+					<label>Key</label>
+					<input id="SecondIPKey5G" type="text" name="ApRadiusKey5G" value="123456789" style="width:100px"/>
+				</div>
+			</fieldset>
+
+		</div>
+<!--
+		<div id="tab4" style="display:none">
+			<p>
+			<br />
+			<label>Time zone</label>
+			<select name="zone" value="2">
+			<option value="1">UTC</option>
+			<option value="2">China</option>
+			</select>
+			</p>
+
+			<p>
+			<input type="text" name="redir41" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir42" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir43" value="<%=pcdata(stra)%>" />
+			</p>
+		</div>
+-->
+	</fieldset>
+	</fieldset>
+
+
+</div>
+	
+<div style="text-align:right">
+			<!--
+			<input type="text" name="redir" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir1" value="<%=pcdata(stra)%>" />
+			<input type="text" name="redir2" value="<%=pcdata(stra)%>" />
+			<input type="text" name="apInfo1" value="<%=pcdata(stra)%>" />
+			<input type="text" name="apName1" value="<%=pcdata(stra)%>" />
+			-->
+
+			<input class="cbi-button cbi-button-save" type="submit" value="<%:Save%>" />
+</div>
+</form>
+</body>
+</html>

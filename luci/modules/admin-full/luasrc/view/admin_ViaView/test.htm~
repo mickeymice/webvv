@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<body>
+<select>
+				<option>Volvo</option>
+				<option>Saab</option>
+				<option>Mercedes</option>
+				<option selected="selected">Audi</option>
+				
+</select>
+
+<select>
+  <option>Volvo</option>
+  <option selected="selected">Saab</option>
+  <option>Mercedes</option>
+  <option>Audi</option>
+</select>
+
+<select>
+  <option>Volvo</option>
+  <option selected="selected">Saab</option>
+  <option>Mercedes</option>
+  <option>Audi</option>
+</select>
+</body>
+</html>

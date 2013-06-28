@@ -1,0 +1,92 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+	http://www.apache.org/licenses/LICENSE-2.0
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  save1.htm
+* Author      :  Rock Yang
+* Data        :  2013/05/29
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/05/29  Rock Yang       ...       First release
+
+-%>
+
+<%+header%>
+
+<%
+	--send message to AC-app
+	--step1. define command's preamble, commID, cmdLen
+	local preamble = "viamanag"
+	local cmmID    = 0x501D
+	local cmdLen   = 10
+	local cmdPrem  = preamble..string.format("%06d",cmmID)..string.format("%06d",cmdLen)
+
+	local socket = require"socket"
+	local host   = "192.168.1.225"
+	local port   = "1111"
+	local data, err = socket.connect(host, port)
+	if not data then
+		--fail(err)
+	else
+		data:setoption("tcp-nodelay", true)
+		data:settimeout(10)
+		local str1 = data:receive()
+		local str2 = data:receive()
+		--command ID 0x501D
+		data:send(cmdPrem.."\n")
+		local str3 = data:receive()	
+		data:close()
+		--pass("connected!")
+	end
+
+	tabRedir     = luci.http.formvalue("redir", true)
+	tabRedir1    = luci.http.formvalue("redir1", true)
+	tabRedir2    = luci.http.formvalue("redir2", true)
+	apName       = luci.http.formvalue("apName", true)
+	apInfo       = luci.http.formvalue("apInfo", true)
+	apName1       = luci.http.formvalue("apName1", true)
+	apInfo1       = luci.http.formvalue("apInfo1", true)
+	localTime     = luci.http.formvalue("localTime", true)
+	hostname      = luci.http.formvalue("hostname", true)
+	zone          = luci.http.formvalue("zone", true)
+
+	local stra = "Shuant Test"
+
+%>
+
+
+<h1><%:Hello World save1%></h1>
+<h1><%=pcdata(str1)%></h1>
+<h1><%=pcdata(str2)%></h1>
+<h1><%=pcdata(str3)%></h1>
+<h1><%:tabRedir%></h1>
+<h1><%=pcdata(tabRedir)%></h1>
+<h1><%=pcdata(tabRedir1)%></h1>
+<h1><%=pcdata(tabRedir2)%></h1>
+<h1><%=pcdata(apName)%></h1>
+<h1><%=pcdata(apInfo)%></h1>
+<h1><%=pcdata(apName1)%></h1>
+<h1><%=pcdata(apInfo1)%></h1>
+<h1><%=pcdata(localTime)%></h1>
+<h1><%=pcdata(hostname)%></h1>
+<h1><%=pcdata(zone)%></h1>
+
+
+
+
+<div class="cbi-page-actions">
+	<form class="inline" method="get" action="shuang">
+		<input class="cbi-button cbi-button-link" style="margin:0" type="submit" value="<%:Back%>" />
+	</form>
+</div>
+
+<%+footer%>
