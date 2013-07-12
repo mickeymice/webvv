@@ -11,6 +11,16 @@ You may obtain a copy of the License at
 
 $Id$
 
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  ApConfigSave.htm
+* Author      :  Rock Yang
+* Data        :  2013/07/09
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/07/09  Rock Yang       ...       First release
+
 -%>
 
 <%-
@@ -19,7 +29,7 @@ $Id$
 	require "luci.tools.webadmin"
 	require "nixio.fs"	
 
-	--get message to AC-app
+	--get message from AC-app
 	local preamble = "viamanag"
 	local cmdRecArray = {}
 	local apNameArray = {}
@@ -33,8 +43,34 @@ $Id$
 	apNumIndex = 1
 
 	local socket = require"socket"
-	local host   = "192.168.1.225"
-	local port   = "1111"
+	local host   = "192.168.0.106"
+	local port   = "8888"
+
+	--use udp to communicate to AC app
+	local udp    = socket.udp()
+	udp:settimeout(10)
+	udp:setpeername(host,port)
+	--udp:sendto("test Message", host, port)
+	--udp:send("test message")
+	udp:send(preamble.."APListRequestStart")
+	while apNumIndex <= 255 do
+		local StrCmdReceive  = udp:receive()
+		if (StrCmdReceive) then
+			cmdRecArray[apNumIndex] = StrCmdReceive;
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestEnd")) then
+				break;
+			end
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestStart")) then
+				apNumIndex = apNumIndex+1
+			end
+		else
+			break;
+		end
+	end
+	udp:close()
+
+--[[
+	--doesn't use TCP 
 	local data, err = socket.connect(host, port)
 	if not data then
 		--fail(err)
@@ -58,6 +94,7 @@ $Id$
 		end
 		data:close()
 	end
+--]]
 
 	--get ap list message to varibale array
 	local i = 1
@@ -163,15 +200,19 @@ $Id$
 	}
 </style>
 
-<form method="post" action="<%=controller%>/admin/ViaView/ApConfig">
+<form method="post" action="<%=controller%>/admin/ViaView/APList/ApConfig">
 
-<input id="ApName" type="hidden" name="ApName"/>
+<input id="APName" type="hidden" name="APName" value="test"/>
+<input id="IPAddress" type="hidden" name="IPAddress"/>
+<input id="ListApName" type="hidden" name="ListApName"/>
 
 <div class="cbi-map" id="cbi-network">
 	<h2><a id="content" name="content"><%:AP List%></a></h2>
 	<div class="cbi-map-descr"><%:The AP list for this AC to control%></div>
 
 <h1>AP number is: <%=pcdata(apNumIndex-1)%></h1>
+<h1>command receive: <%=pcdata(cmdRecArray[apNumIndex-1])%></h1>
+<br />
 
 	<fieldset class="cbi-section" id="cbi-table-table">
 		<legend><%_Information for <abbr title="Access Point">AP</abbr>-List%></legend>
@@ -179,7 +220,7 @@ $Id$
 		<div class="cbi-section-node">
 			<table class="cbi-section-table">
 				<tr class="cbi-section-table-titles">
-					<th class="cbi-section-table-cell"><%:AP Name%></th>
+					<th class="cbi-section-table-cell"><%:AP Name(Modify)%></th>
 					<th class="cbi-section-table-cell"><%:Model%></th>
 					<th class="cbi-section-table-cell"><%:IP Address%></th>
 					<th class="cbi-section-table-cell"><%:MAC Address%></th>
@@ -193,8 +234,27 @@ $Id$
 					local i = 1
 					while i < apNumIndex do
 				%>
+				<style>
+				.tabWidthFont160 {width:160px}
+				.tabWidthFont100 {width:100px}
+				.tabWidthFont100 input,.tabWidthFont100 select{font-size:11px;}
+				.tabWidthFont80 {width:80px}
+				.tabWidthFont80 input,.tabWidthFont80 select{font-size:11px;}
+				.tabWidthFont40 {width:40px}
+				.tabWidthFont40 input,.tabWidthFont40 select{font-size:11px;}                 
+				</style>
 				<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
-					<td class="cbi-value-field"><%=pcdata(apNameArray[i])%></td>
+					<td class="tabWidthFont160">
+						<input type="text" onchange="" name="ListApNamei" id="ListApNamei<%=pcdata(i)%>" value="<%=pcdata(apNameArray[i])%>" style="width:100px" />
+						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="location.href='<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName='+document.getElementById('ListApNamei<%=pcdata(i)%>').value+'&amp;IPAddress=<%=pcdata(ipAddrArray[i])%>&amp;num2=gg' " style="width:50px" />
+					</td>
+					<!--
+					<td class="tabWidthFont160">
+						<input type="text" onchange="" name="ListApNamei" id="ListApNamei<%=pcdata(i)%>" value="<%=pcdata(apNameArray[i])%>" style="width:100px" />
+						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="document.getElementById('APName').value='<%=pcdata(apNameArray[i])%>'; document.getElementById('IPAddress').value='<%=pcdata(ipAddrArray[i])%>'; document.getElementById('ListApName').value=document.getElementById('ListApNamei<%=pcdata(i)%>').value " style="width:50px" />
+					</td>
+					-->
+
 					<td class="cbi-value-field"><%=pcdata(modelArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(ipAddrArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(macAddrArray[i])%></td>
@@ -202,7 +262,7 @@ $Id$
 					<td class="cbi-value-field"><%=pcdata(statusArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(profileArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(groupArray[i])%></td>
-					<td class="cbi-value-field"> <input type="submit" class="cbi-button cbi-button-edit" style="width:100px" onclick="document.getElementById('ApName').value='<%=pcdata(apNameArray[i])%>'"  name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
+					<td class="cbi-value-field"> <input type="submit" class="cbi-button cbi-button-edit" style="width:100px" onclick="document.getElementById('APName').value='<%=pcdata(apNameArray[i])%>'; document.getElementById('IPAddress').value='<%=pcdata(ipAddrArray[i])%>'"  name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
 					</td>
 					<!--<td class="cbi-value-field"> <input type="button" class="cbi-button cbi-button-edit" style="width:100px"  onclick="location.href='<%=controller%>/admin/ViaView/ApConfig?ApName=<%=pcdata(apNameArray[i])%>&amp;num=<%=pcdata(i)%>&amp;num2=<%=i%>'" name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
 					</td>
@@ -216,5 +276,17 @@ $Id$
 
 </div>
 </form>
+
+<script>
+//<![CDATA[
+function fModifyApName(argApName,argIpAddr)
+{
+	console.log(argApName);
+	console.log(argIpAddr);
+}
+
+
+//]]>
+</script>
 
 <%+footer%>

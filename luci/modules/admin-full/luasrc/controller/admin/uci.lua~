@@ -29,7 +29,7 @@ function index()
 	entry({"admin", "uci", "apply"}, call("action_apply"), _("Apply"), 20).query = {redir=redir}
 	entry({"admin", "uci", "saveapply"}, call("action_apply"), _("Save &#38; Apply"), 10).query = {redir=redir}
 
-	entry({"admin", "uci", "ApConfSave"}, call("ApConfSave"), _("ApConfSave"), 20).query = {redir=redir}
+	--entry({"admin", "uci", "ApConfSave"}, call("ApConfSave"), _("ApConfSave"), 20).query = {redir=redir}
 end
 
 function action_changes()
@@ -96,7 +96,7 @@ function ApConfSave()
 		end
 	end
 
-	luci.template.render("admin_uci/save1", {
+	luci.template.render("admin_uci/ApConfSave", {
 		changes = next(changes) and changes,
 		configs = reload
 	})

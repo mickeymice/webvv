@@ -29,7 +29,7 @@ function index()
 	entry({"admin", "uci", "apply"}, call("action_apply"), _("Apply"), 20).query = {redir=redir}
 	entry({"admin", "uci", "saveapply"}, call("action_apply"), _("Save &#38; Apply"), 10).query = {redir=redir}
 
-	entry({"admin", "uci", "ApConfSave"}, call("ApConfSave"), _("ApConfSave"), 20).query = {redir=redir}
+	--entry({"admin", "uci", "ApConfigSave"}, call("ApConfSave"), _("ApConfSave"), 20).query = {redir=redir}
 end
 
 function action_changes()

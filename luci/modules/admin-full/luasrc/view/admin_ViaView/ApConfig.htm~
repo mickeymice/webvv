@@ -1,3 +1,25 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+	http://www.apache.org/licenses/LICENSE-2.0
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  ApConfig.htm
+* Author      :  Rock Yang
+* Data        :  2013/05/29
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/05/29  Rock Yang       ...       First release
+
+-%>
+
 <%+header%>
 
 <!--
@@ -5,8 +27,8 @@
 //<![CDATA[
 console.log(location.search);
 str1=location.search;
-strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
-//document.getElementById("ApName").value=strApName;
+strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
+//document.getElementById("APName").value=strAPName;
 //]]>
 </script>
 -->
@@ -21,6 +43,8 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 	local preamble = "viamanag"
 	local cmdReceive
 	local statusCmdRecv = false
+	local index = 1
+
 
 	local cmdElemValue={}
 	local cmdElemString={"ApDhcpEnable","ApScanStatus","ApScanInterval","ApIpAddress","ApNetmask", "ApGateway","Ap2.4GEnable","ApClientNumber2.4G","ApHTMode2.4G","ApTransmitPower2.4G","ApMode2.4G", "ApChannel2.4G","ApCountryCode2.4G","ApFragmentation2.4G","ApRTSCTS2.4G","ApESSID2.4G1","ApHideSSID2.4G1", "ApSecurityMode2.4G1","ApIndexCipher2.4G1","ApKey2.4G1","PrimaryIP2.4G1","PrimaryIPPort2.4G1","PrimaryIPKey2.4G1", "SecondIP2.4G1","SecondIPPort2.4G1","SecondIPKey2.4G1","ApESSID2.4G2","ApHideSSID2.4G2","ApSecurityMode2.4G2", "ApIndexCipher2.4G2","ApKey2.4G2","PrimaryIP2.4G2","PrimaryIPPort2.4G2","PrimaryIPKey2.4G2","SecondIP2.4G2", "SecondIPPort2.4G2","SecondIPKey2.4G2","ApESSID2.4G3","ApHideSSID2.4G3","ApSecurityMode2.4G3","ApIndexCipher2.4G3", "ApKey2.4G3","PrimaryIP2.4G3","PrimaryIPPort2.4G3","PrimaryIPKey2.4G3","SecondIP2.4G3","SecondIPPort2.4G3", "SecondIPKey2.4G3","ApESSID2.4G4","ApHideSSID2.4G4","ApSecurityMode2.4G4","ApIndexCipher2.4G4","ApKey2.4G4", "PrimaryIP2.4G4","PrimaryIPPort2.4G4","PrimaryIPKey2.4G4","SecondIP2.4G4","SecondIPPort2.4G4","SecondIPKey2.4G4", "Ap5GEnable","ApClientNumber5G","ApHTMode5G","ApTransmitPower5G","ApMode5G","ApChannel5G","ApCountryCode5G", "ApFragmentation5G","ApRTSCTS5G","ApESSID5G1","ApHideSSID5G1","ApSecurityMode5G1","ApIndexCipher5G1","ApKey5G1", "PrimaryIP5G1","PrimaryIPPort5G1","PrimaryIPKey5G1","SecondIP5G1","SecondIPPort5G1","SecondIPKey5G1","ApESSID5G2", "ApHideSSID5G2","ApSecurityMode5G2","ApIndexCipher5G2","ApKey5G2","PrimaryIP5G2","PrimaryIPPort5G2","PrimaryIPKey5G2", "SecondIP5G2","SecondIPPort5G2","SecondIPKey5G2","ApESSID5G3","ApHideSSID5G3","ApSecurityMode5G3","ApIndexCipher5G3","ApKey5G3", "PrimaryIP5G3","PrimaryIPPort5G3","PrimaryIPKey5G3","SecondIP5G3","SecondIPPort5G3","SecondIPKey5G3","ApESSID5G4", "ApHideSSID5G4","ApSecurityMode5G4","ApIndexCipher5G4","ApKey5G4","PrimaryIP5G4","PrimaryIPPort5G4","PrimaryIPKey5G4", "SecondIP5G4","SecondIPPort5G4","SecondIPKey5G4"}
@@ -28,17 +52,40 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 	local revCmdElemString={["ApDhcpEnable"]=1,["ApScanStatus"]=2,["ApScanInterval"]=3,["ApIpAddress"]=4, ["ApNetmask"]=5,["ApGateway"]=6,["Ap2.4GEnable"]=7,["ApClientNumber2.4G"]=8,["ApHTMode2.4G"]=9,["ApTransmitPower2.4G"]=10,["ApMode2.4G"]=11,["ApChannel2.4G"]=12,["ApCountryCode2.4G"]=13, ["ApFragmentation2.4G"]=14,["ApRTSCTS2.4G"]=15,["ApESSID2.4G1"]=16,["ApHideSSID2.4G1"]=17,["ApSecurityMode2.4G1"]=18, ["ApIndexCipher2.4G1"]=19,["ApKey2.4G1"]=20,["PrimaryIP2.4G1"]=21,["PrimaryIPPort2.4G1"]=22,["PrimaryIPKey2.4G1"]=23,["SecondIP2.4G1"]=24,["SecondIPPort2.4G1"]=25,["SecondIPKey2.4G1"]=26,["ApESSID2.4G2"]=27,["ApHideSSID2.4G2"]=28,["ApSecurityMode2.4G2"]=29, ["ApIndexCipher2.4G2"]=30,["ApKey2.4G2"]=31,["PrimaryIP2.4G2"]=32,["PrimaryIPPort2.4G2"]=33,["PrimaryIPKey2.4G2"]=34,["SecondIP2.4G2"]=35,["SecondIPPort2.4G2"]=36,["SecondIPKey2.4G2"]=37,["ApESSID2.4G3"]=38,["ApHideSSID2.4G3"]=39,["ApSecurityMode2.4G3"]=40, ["ApIndexCipher2.4G3"]=41,["ApKey2.4G3"]=42,["PrimaryIP2.4G3"]=43,["PrimaryIPPort2.4G3"]=44,["PrimaryIPKey2.4G3"]=45,["SecondIP2.4G3"]=46,["SecondIPPort2.4G3"]=47,["SecondIPKey2.4G3"]=48,["ApESSID2.4G4"]=49,["ApHideSSID2.4G4"]=50,["ApSecurityMode2.4G4"]=51, ["ApIndexCipher2.4G4"]=52,["ApKey2.4G4"]=53,["PrimaryIP2.4G4"]=54,["PrimaryIPPort2.4G4"]=55,["PrimaryIPKey2.4G4"]=56,["SecondIP2.4G4"]=57,["SecondIPPort2.4G4"]=58,["SecondIPKey2.4G4"]=59,["Ap5GEnable"]=60,["ApClientNumber5G"]=61,["ApHTMode5G"]=62,["ApTransmitPower5G"]=63,["ApMode5G"]=64,["ApChannel5G"]=65,["ApCountryCode5G"]=66,["ApFragmentation5G"]=67,["ApRTSCTS5G"]=68, ["ApESSID5G1"]=69,["ApHideSSID5G1"]=70,["ApSecurityMode5G1"]=71,["ApIndexCipher5G1"]=72, ["ApKey5G1"]=73,["PrimaryIP5G1"]=74,["PrimaryIPPort5G1"]=75,["PrimaryIPKey5G1"]=76,["SecondIP5G1"]=77,["SecondIPPort5G1"]=78,["SecondIPKey5G1"]=79,["ApESSID5G2"]=80,["ApHideSSID5G2"]=81,["ApSecurityMode5G2"]=82,["ApIndexCipher5G2"]=83, ["ApKey5G2"]=84,["PrimaryIP5G2"]=85,["PrimaryIPPort5G2"]=86,["PrimaryIPKey5G2"]=87,["SecondIP5G2"]=88,["SecondIPPort5G2"]=89,["SecondIPKey5G2"]=90,["ApESSID5G3"]=91,["ApHideSSID5G3"]=92,["ApSecurityMode5G3"]=93,["ApIndexCipher5G3"]=94, ["ApKey5G3"]=95,["PrimaryIP5G3"]=96,["PrimaryIPPort5G3"]=97,["PrimaryIPKey5G3"]=98,["SecondIP5G3"]=99,["SecondIPPort5G3"]=100,["SecondIPKey5G3"]=101,["ApESSID5G4"]=102,["ApHideSSID5G4"]=103,["ApSecurityMode5G4"]=104,["ApIndexCipher5G4"]=105, ["ApKey5G4"]=106,["PrimaryIP5G4"]=107,["PrimaryIPPort5G4"]=108,["PrimaryIPKey5G4"]=109,["SecondIP5G4"]=110,["SecondIPPort5G4"]=111,["SecondIPKey5G4"]=112}
 
 
-	local index = 1
 	local socket = require"socket"
-	local host   = "192.168.1.225"
-	local port   = "1111"
+	local host   = "192.168.0.106"
+	local port   = "8888"
+
+	--use udp to communicate to AC app
+	local udp    = socket.udp()
+	udp:settimeout(10)
+	udp:setpeername(host,port)
+	--udp:sendto("test Message", host, port)
+	--udp:send("test message")
+	udp:send(preamble.."APConfigurationStart".."IPAddress="..tostring(luci.http.formvalue("IPAddress")))
+	while index <= 20 do
+		cmdReceive  = udp:receive()
+		if (cmdReceive) then
+			if (string.find(cmdReceive, preamble.."APConfigurationStart")) then
+				statusCmdRecv = true
+				break
+			end
+		else
+			statusCmdRecv = false
+			break;
+		end
+		index = index + 1
+	end
+	udp:close()
+--[[
+	--use TCP to communicate to AC app
 	local data, err = socket.connect(host, port)
 	if not data then
 		--fail(err)
 	else
 		data:setoption("tcp-nodelay", true)
 		data:settimeout(10)
-		data:send(preamble.."APConfigurationStart".."APName=".."\n")
+		data:send(preamble.."APConfigurationStart".."IPAddress="..tostring(luci.http.formvalue("IPAddress")).."\n")
 
 		while index <= 20 do
 			cmdReceive, err = data:receive()
@@ -50,13 +97,13 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 				statusCmdRecv = true
 				break
 			end
-		index = index + 1
+			index = index + 1
 		end
 
 		data:close()
 		--pass("connected!")
 	end
-
+--]]
 	--parse the command after receive
 	if statusCmdRecv then
 		index = 1
@@ -77,37 +124,25 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 		
 	end
 
-	strApName = luci.http.formvalue("ApName")
-	--glStra = "Shuant Test global varaible"
+	strAPName = luci.http.formvalue("APName")
+	strIPAddress = luci.http.formvalue("IPAddress")
 -%>
 
 
-<form class="inline" method="get" action="<%=controller%>/admin/uci/ApConfSave">
+<form class="inline" method="get" action="<%=controller%>/admin/ViaView/APList/ApConfigSave">
+
+<h1>strIPAddress: <%=pcdata(strIPAddress)%></h1>
+<h1>command receive: <%=pcdata(cmdReceive)%></h1>
 
 <div class="cbi-map" id="cbi-dhcp">
 	<h2><a id="content" name="content"><%:AP Configuration%></a></h2>
 	<div class="cbi-map-descr"><%:Set AP's IP <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr>-Server <abbr title="Service Set Identifier">SSID </abbr>and 2.4G/5G wireless attribute %></div>
 
 
-<!--
-<h1>ApName is :</h1>
-<h1><%=pcdata(strApName)%></h1>
-<h1><%=pcdata(index)%></h1>
-
-<%		index = 1
-		local cmdStr = "SecondIPKey5G4"
-		while index <= revCmdElemString[cmdStr] do
-%>
-<h1><%=pcdata(cmdElemString[index])%>::<%=pcdata(cmdElemValue[index])%></h1>
-<%
-		index = index+1
-		end
-%>
--->
-
-
 	<label>AP Name: </label>
-	<input id="ApName" type="text" name="ApName" value="<%=pcdata(strApName)%>" style="width:150px" />
+	<input id="APName" type="text" name="APName" value="<%=pcdata(strAPName)%>" style="width:150px" disabled="disabled" />
+	<input id="IPAddress" type="hidden" name="IPAddress" value="<%=pcdata(strIPAddress)%>" />
+	<br />
 	<br />
 
 	<fieldset class="cbi-section" id="cbi-dhcp-dnsmasq">
@@ -130,9 +165,9 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 			<div class="cbi-value-field">
 				<input type="hidden" value="1"/>
 				<%	if (cmdElemValue[revCmdElemString["ApDhcpEnable"]] == "true") then	%>
-				<input id="ApDhcpEnable" class="cbi-input-checkbox" type="checkbox" name="ApDhcpEnable" checked="checked" onclick="fDhcpEnable('ApDhcpEnable');" />
+				<input id="ApDhcpEnable" class="cbi-input-checkbox" type="checkbox" name="ApDhcpEnable" value="true" checked="checked" onclick="fDhcpEnable('ApDhcpEnable');" />
 				<%	else	%>
-				<input id="ApDhcpEnable" class="cbi-input-checkbox" type="checkbox" name="ApDhcpEnable" onclick="fDhcpEnable('ApDhcpEnable');" />
+				<input id="ApDhcpEnable" class="cbi-input-checkbox" type="checkbox" name="ApDhcpEnable" value="true" onclick="fDhcpEnable('ApDhcpEnable');" />
 				<%	end	%>
 			<div class="cbi-value-description">
 			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
@@ -143,9 +178,9 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 			<div class="cbi-value-field">
 				<input type="hidden" value="1"/>
 				<%	if (cmdElemValue[revCmdElemString["ApScanStatus"]] == "true") then	%>
-				<input id="ApScanStatus" class="cbi-input-checkbox" type="checkbox" name="ApScanStatus" value="1" checked="checked" onclick="fDhcpEnable('ApScanStatus');" />
+				<input id="ApScanStatus" class="cbi-input-checkbox" type="checkbox" name="ApScanStatus" value="true" checked="checked" onclick="fDhcpEnable('ApScanStatus');" />
 				<%	else	%>
-				<input id="ApScanStatus" class="cbi-input-checkbox" type="checkbox" name="ApScanStatus" value="1" onclick="fDhcpEnable('ApScanStatus');" />
+				<input id="ApScanStatus" class="cbi-input-checkbox" type="checkbox" name="ApScanStatus" value="true" onclick="fDhcpEnable('ApScanStatus');" />
 				<%	end	%>
 				<label>Scan Interval (5~65535)</label>
 				<input id="ApScanInterval" type="text" name="ApScanInterval" value="<%=pcdata(cmdElemValue[revCmdElemString['ApScanInterval']])%>" style="width:50px" />
@@ -191,9 +226,9 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 			<div class="cbi-value-field">
 				<input type="hidden" value="1" />
 				<%	if (cmdElemValue[revCmdElemString["Ap2.4GEnable"]] == "true") then	%>
-				<input id="Ap2.4GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap2.4GEnable" value="1" checked="checked" onclick="f24G5GEnable('Ap2.4GEnable');" />
+				<input id="Ap2.4GEnable" class="cbi-input-checkbox" type="checkbox"  name="Ap2.4GEnable" value="true" checked="checked" onclick="f24G5GEnable('Ap2.4GEnable');" />
 				<%	else	%>
-				<input id="Ap2.4GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap2.4GEnable" value="1" onclick="f24G5GEnable('Ap2.4GEnable');" />
+				<input id="Ap2.4GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap2.4GEnable" value="true" onclick="f24G5GEnable('Ap2.4GEnable');" />
 				<%	end	%>
 			<div class="cbi-value-description">
 			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
@@ -211,7 +246,7 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 
 			<div class="cbi-value"><label class="cbi-value-title">HT Mode</label>
 			<div class="cbi-value-field">
-				<select id="ApHTMode2.4G" class="cbi-input-select" name="ApHTMode2.4G" >
+				<select id="ApHTMode2.4G" class="cbi-input-select" name="ApHTMode2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApHTMode2.4G']])%>" >
 				<option id="cbi-network-wan-proto-static" value="0">20MHz</option>
 				<option id="cbi-network-wan-proto-static" value="1">40MHz 2nd channel below</option>
 				<option id="cbi-network-wan-proto-static" value="2">40MHz 2nd channel above</option>
@@ -222,46 +257,46 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 			<div class="cbi-value-field">
 				<select id="ApTransmitPower2.4G" class="cbi-input-select" name="ApTransmitPower2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApTransmitPower2.4G']])%>" >
 				<option id="cbi-network-wan-proto-static" value="0">0 dBm(1mW)</option>
-				<option id="cbi-network-wan-proto-static" value="4">4 dBm(2mW)</option>
-				<option id="cbi-network-wan-proto-static" value="5">5 dBm(3mW)</option>
-				<option id="cbi-network-wan-proto-static" value="7">7 dBm(5mW)</option>
-				<option id="cbi-network-wan-proto-static" value="8">8 dBm(6mW)</option>
-				<option id="cbi-network-wan-proto-static" value="9" selected="selected">9 dBm(7mW)</option>
-				<option id="cbi-network-wan-proto-static" value="10">10 dBm(10mW)</option>
-				<option id="cbi-network-wan-proto-static" value="11">11 dBm(12mW)</option>
-				<option id="cbi-network-wan-proto-static" value="12">12 dBm(15mW)</option>
-				<option id="cbi-network-wan-proto-static" value="13">13 dBm(19mW)</option>
-				<option id="cbi-network-wan-proto-static" value="14">14 dBm(25mW)</option>
-				<option id="cbi-network-wan-proto-static" value="15">15 dBm(31mW)</option>
-				<option id="cbi-network-wan-proto-static" value="16">16 dBm(39mW)</option>
-				<option id="cbi-network-wan-proto-static" value="17">17 dBm(50mW)</option>
-				<option id="cbi-network-wan-proto-static" value="18">18 dBm(63mW)</option>
-				<option id="cbi-network-wan-proto-static" value="19">19 dBm(79mW)</option>
-				<option id="cbi-network-wan-proto-static" value="20">20 dBm(100mW)</option>
-				<option id="cbi-network-wan-proto-static" value="21">21 dBm(125mW)</option>
-				<option id="cbi-network-wan-proto-static" value="22">22 dBm(158mW)</option>
-				<option id="cbi-network-wan-proto-static" value="23">23 dBm(199mW)</option>
-				<option id="cbi-network-wan-proto-static" value="24">24 dBm(251mW)</option>
-				<option id="cbi-network-wan-proto-static" value="25">25 dBm(316mW)</option>
-				<option id="cbi-network-wan-proto-static" value="26">26 dBm(398mW)</option>
-				<option id="cbi-network-wan-proto-static" value="27">27 dBm(501mW)</option>
+				<option id="cbi-network-wan-proto-static" value="1">4 dBm(2mW)</option>
+				<option id="cbi-network-wan-proto-static" value="2">5 dBm(3mW)</option>
+				<option id="cbi-network-wan-proto-static" value="3">7 dBm(5mW)</option>
+				<option id="cbi-network-wan-proto-static" value="4">8 dBm(6mW)</option>
+				<option id="cbi-network-wan-proto-static" value="5" selected="selected">9 dBm(7mW)</option>
+				<option id="cbi-network-wan-proto-static" value="6">10 dBm(10mW)</option>
+				<option id="cbi-network-wan-proto-static" value="7">11 dBm(12mW)</option>
+				<option id="cbi-network-wan-proto-static" value="8">12 dBm(15mW)</option>
+				<option id="cbi-network-wan-proto-static" value="9">13 dBm(19mW)</option>
+				<option id="cbi-network-wan-proto-static" value="10">14 dBm(25mW)</option>
+				<option id="cbi-network-wan-proto-static" value="11">15 dBm(31mW)</option>
+				<option id="cbi-network-wan-proto-static" value="12">16 dBm(39mW)</option>
+				<option id="cbi-network-wan-proto-static" value="13">17 dBm(50mW)</option>
+				<option id="cbi-network-wan-proto-static" value="14">18 dBm(63mW)</option>
+				<option id="cbi-network-wan-proto-static" value="15">19 dBm(79mW)</option>
+				<option id="cbi-network-wan-proto-static" value="16">20 dBm(100mW)</option>
+				<option id="cbi-network-wan-proto-static" value="17">21 dBm(125mW)</option>
+				<option id="cbi-network-wan-proto-static" value="18">22 dBm(158mW)</option>
+				<option id="cbi-network-wan-proto-static" value="19">23 dBm(199mW)</option>
+				<option id="cbi-network-wan-proto-static" value="20">24 dBm(251mW)</option>
+				<option id="cbi-network-wan-proto-static" value="21">25 dBm(316mW)</option>
+				<option id="cbi-network-wan-proto-static" value="22">26 dBm(398mW)</option>
+				<option id="cbi-network-wan-proto-static" value="23">27 dBm(501mW)</option>
 				</select>
 			</div></div>
 
 			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
 			<div class="cbi-value-field">
 				<select id="ApMode2.4G" class="cbi-input-select" name="ApMode2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApMode2.4G']])%>" >
-				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
-				<option id="cbi-network-wan-proto-static" value="80211b">802.11 b</option>
-				<option id="cbi-network-wan-proto-static" value="80211g">802.11 g</option>
-				<option id="cbi-network-wan-proto-static" value="80211gn">802.11 g+n</option>
+				<option id="cbi-network-wan-proto-static" value="0">auto</option>
+				<option id="cbi-network-wan-proto-static" value="1">802.11 b</option>
+				<option id="cbi-network-wan-proto-static" value="2">802.11 g</option>
+				<option id="cbi-network-wan-proto-static" value="3">802.11 g+n</option>
 				</select>
 			</div></div>
 
 			<div class="cbi-value"><label class="cbi-value-title">Channel</label>
 			<div class="cbi-value-field">
 				<select id="ApChannel2.4G" class="cbi-input-select" name="ApChannel2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApChannel2.4G']])%>" >
-				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="0">auto</option>
 				<option id="cbi-network-wan-proto-static" value="1">1(2.412GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="2">2(2.417GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="3">3(2.422GHz)</option>
@@ -325,28 +360,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="cbi-value-field">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G1"]] == "true") then	%>
-							<input id="ApHideSSID2.4G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G1" checked="checked" />
+							<input id="ApHideSSID2.4G1" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G1" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID2.4G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G1" />
+							<input id="ApHideSSID2.4G1" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G1" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode2.4G1" name="ApSecurityMode2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G1']])%>" onclick="fSecurityMode('ApSecurityMode2.4G1');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher2.4G1" name="ApIndexCipher2.4G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G1']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -378,28 +413,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="tabWidthFont40">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G2"]] == "true") then	%>
-							<input id="ApHideSSID2.4G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G2" checked="checked" />
+							<input id="ApHideSSID2.4G2" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G2" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID2.4G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G2" />
+							<input id="ApHideSSID2.4G2" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G2" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode2.4G2" name="ApSecurityMode2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G2']])%>" onclick="fSecurityMode('ApSecurityMode2.4G2');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher2.4G2" name="ApIndexCipher2.4G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G2']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -431,28 +466,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="tabWidthFont40">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G3"]] == "true") then	%>
-							<input id="ApHideSSID2.4G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G3" checked="checked" />
+							<input id="ApHideSSID2.4G3" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G3" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID2.4G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G3" />
+							<input id="ApHideSSID2.4G3" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G3" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode2.4G3" name="ApSecurityMode2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G3']])%>" onclick="fSecurityMode('ApSecurityMode2.4G3');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher2.4G3" name="ApIndexCipher2.4G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -484,28 +519,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="tabWidthFont40">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID2.4G4"]] == "true") then	%>
-							<input id="ApHideSSID2.4G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G4" checked="checked" />
+							<input id="ApHideSSID2.4G4" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G4" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID2.4G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID2.4G4" />
+							<input id="ApHideSSID2.4G4" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID2.4G4" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode2.4G4" name="ApSecurityMode2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode2.4G4']])%>" onclick="fSecurityMode('ApSecurityMode2.4G4');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher2.4G4" name="ApIndexCipher2.4G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher2.4G4']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -545,9 +580,9 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 			<div class="cbi-value-field">
 				<input type="hidden" value="1"/>
 				<%	if (cmdElemValue[revCmdElemString["Ap5GEnable"]] == "true") then	%>
-				<input id="Ap5GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap5GEnable" value="1" checked="checked" onclick="f24G5GEnable('Ap5GEnable');" />
+				<input id="Ap5GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap5GEnable" value="true" checked="checked" onclick="f24G5GEnable('Ap5GEnable');" />
 				<%	else	%>
-				<input id="Ap5GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap5GEnable" value="1" onclick="f24G5GEnable('Ap5GEnable');" />
+				<input id="Ap5GEnable" class="cbi-input-checkbox" type="checkbox" name="Ap5GEnable" value="true" onclick="f24G5GEnable('Ap5GEnable');" />
 				<%	end	%>
 			<div class="cbi-value-description">
 			<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
@@ -566,9 +601,9 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 			<div class="cbi-value"><label class="cbi-value-title">HT Mode</label>
 			<div class="cbi-value-field">
 				<select id="ApHTMode5G" class="cbi-input-select" name="ApHTMode5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApHTMode5G']])%>" >
-				<option id="cbi-network-wan-proto-static" value="20MHz">20MHz</option>
-				<option id="cbi-network-wan-proto-static" value="40MHzBelow">40MHz 2nd channel below</option>
-				<option id="cbi-network-wan-proto-static" value="40MHzAbove">40MHz 2nd channel above</option>
+				<option id="cbi-network-wan-proto-static" value="0">20MHz</option>
+				<option id="cbi-network-wan-proto-static" value="1">40MHz 2nd channel below</option>
+				<option id="cbi-network-wan-proto-static" value="2">40MHz 2nd channel above</option>
 				</select>
 			</div></div>
 
@@ -576,50 +611,50 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 			<div class="cbi-value-field">
 				<select id="ApTransmitPower5G" class="cbi-input-select" name="ApTransmitPower5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApTransmitPower5G']])%>" >
 				<option id="cbi-network-wan-proto-static" value="0">0 dBm(1mW)</option>
-				<option id="cbi-network-wan-proto-static" value="4">4 dBm(2mW)</option>
-				<option id="cbi-network-wan-proto-static" value="5">5 dBm(3mW)</option>
-				<option id="cbi-network-wan-proto-static" value="7">7 dBm(5mW)</option>
-				<option id="cbi-network-wan-proto-static" value="8">8 dBm(6mW)</option>
-				<option id="cbi-network-wan-proto-static" value="9">9 dBm(7mW)</option>
-				<option id="cbi-network-wan-proto-static" value="10">10 dBm(10mW)</option>
-				<option id="cbi-network-wan-proto-static" value="11">11 dBm(12mW)</option>
-				<option id="cbi-network-wan-proto-static" value="12">12 dBm(15mW)</option>
-				<option id="cbi-network-wan-proto-static" value="13">13 dBm(19mW)</option>
-				<option id="cbi-network-wan-proto-static" value="14">14 dBm(25mW)</option>
-				<option id="cbi-network-wan-proto-static" value="15">15 dBm(31mW)</option>
-				<option id="cbi-network-wan-proto-static" value="16">16 dBm(39mW)</option>
-				<option id="cbi-network-wan-proto-static" value="17">17 dBm(50mW)</option>
-				<option id="cbi-network-wan-proto-static" value="18">18 dBm(63mW)</option>
-				<option id="cbi-network-wan-proto-static" value="19">19 dBm(79mW)</option>
-				<option id="cbi-network-wan-proto-static" value="20">20 dBm(100mW)</option>
-				<option id="cbi-network-wan-proto-static" value="21">21 dBm(125mW)</option>
-				<option id="cbi-network-wan-proto-static" value="22">22 dBm(158mW)</option>
-				<option id="cbi-network-wan-proto-static" value="23">23 dBm(199mW)</option>
-				<option id="cbi-network-wan-proto-static" value="24">24 dBm(251mW)</option>
-				<option id="cbi-network-wan-proto-static" value="25">25 dBm(316mW)</option>
-				<option id="cbi-network-wan-proto-static" value="26">26 dBm(398mW)</option>
-				<option id="cbi-network-wan-proto-static" value="27">27 dBm(501mW)</option>
+				<option id="cbi-network-wan-proto-static" value="1">4 dBm(2mW)</option>
+				<option id="cbi-network-wan-proto-static" value="2">5 dBm(3mW)</option>
+				<option id="cbi-network-wan-proto-static" value="3">7 dBm(5mW)</option>
+				<option id="cbi-network-wan-proto-static" value="4">8 dBm(6mW)</option>
+				<option id="cbi-network-wan-proto-static" value="5">9 dBm(7mW)</option>
+				<option id="cbi-network-wan-proto-static" value="6">10 dBm(10mW)</option>
+				<option id="cbi-network-wan-proto-static" value="7">11 dBm(12mW)</option>
+				<option id="cbi-network-wan-proto-static" value="8">12 dBm(15mW)</option>
+				<option id="cbi-network-wan-proto-static" value="9">13 dBm(19mW)</option>
+				<option id="cbi-network-wan-proto-static" value="10">14 dBm(25mW)</option>
+				<option id="cbi-network-wan-proto-static" value="11">15 dBm(31mW)</option>
+				<option id="cbi-network-wan-proto-static" value="12">16 dBm(39mW)</option>
+				<option id="cbi-network-wan-proto-static" value="13">17 dBm(50mW)</option>
+				<option id="cbi-network-wan-proto-static" value="14">18 dBm(63mW)</option>
+				<option id="cbi-network-wan-proto-static" value="15">19 dBm(79mW)</option>
+				<option id="cbi-network-wan-proto-static" value="16">20 dBm(100mW)</option>
+				<option id="cbi-network-wan-proto-static" value="17">21 dBm(125mW)</option>
+				<option id="cbi-network-wan-proto-static" value="18">22 dBm(158mW)</option>
+				<option id="cbi-network-wan-proto-static" value="19">23 dBm(199mW)</option>
+				<option id="cbi-network-wan-proto-static" value="20">24 dBm(251mW)</option>
+				<option id="cbi-network-wan-proto-static" value="21">25 dBm(316mW)</option>
+				<option id="cbi-network-wan-proto-static" value="22">26 dBm(398mW)</option>
+				<option id="cbi-network-wan-proto-static" value="23">27 dBm(501mW)</option>
 				</select>
 			</div></div>
 
 			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
 			<div class="cbi-value-field">
 				<select id="ApMode5G" class="cbi-input-select" name="ApMode5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApMode5G']])%>" >
-				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
-				<option id="cbi-network-wan-proto-static" value="80211b">802.11 a</option>
-				<option id="cbi-network-wan-proto-static" value="80211gn">802.11 a+n</option>
+				<option id="cbi-network-wan-proto-static" value="0">auto</option>
+				<option id="cbi-network-wan-proto-static" value="1">802.11 a</option>
+				<option id="cbi-network-wan-proto-static" value="2">802.11 a+n</option>
 				</select>
 			</div></div>
 
 			<div class="cbi-value"><label class="cbi-value-title">Channel</label>
 			<div class="cbi-value-field">
 				<select id="ApChannel5G" class="cbi-input-select" name="ApChannel5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApChannel5G']])%>" >
-				<option id="cbi-network-wan-proto-static" value="auto">auto</option>
+				<option id="cbi-network-wan-proto-static" value="0">auto</option>
 				<option id="cbi-network-wan-proto-static" value="1">36(5.180GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="2">40(5.200GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="3">44(5.220GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="4">48(5.240GHz)</option>
-				<option id="cbi-network-wan-proto-static" value="5">49(5.745GHz)</option>
+				<option id="cbi-network-wan-proto-static" value="5">149(5.745GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="6">153(5.765GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="7">157(5.785GHz)</option>
 				<option id="cbi-network-wan-proto-static" value="8">161(5.805GHz)</option>
@@ -676,28 +711,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="cbi-value-field">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G1"]] == "true") then	%>
-							<input id="ApHideSSID5G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G1" checked="checked" />
+							<input id="ApHideSSID5G1" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G1" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID5G1" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G1" />
+							<input id="ApHideSSID5G1" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G1" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode5G1" name="ApSecurityMode5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G1']])%>" onclick="fSecurityMode('ApSecurityMode5G1');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher5G1" name="ApIndexCipher5G1" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G1']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -729,28 +764,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="tabWidthFont40">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G2"]] == "true") then	%>
-							<input id="ApHideSSID5G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G2" checked="checked" />
+							<input id="ApHideSSID5G2" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G2" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID5G2" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G2" />
+							<input id="ApHideSSID5G2" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G2" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode5G2" name="ApSecurityMode5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G2']])%>" onclick="fSecurityMode('ApSecurityMode5G2');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher5G2" name="ApIndexCipher5G2" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G2']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -782,28 +817,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="tabWidthFont40">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G3"]] == "true") then	%>
-							<input id="ApHideSSID5G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G3" checked="checked" />
+							<input id="ApHideSSID5G3" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G3" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID5G3" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G3" />
+							<input id="ApHideSSID5G3" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G3" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode5G3" name="ApSecurityMode5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G3']])%>" onclick="fSecurityMode('ApSecurityMode5G3');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher5G3" name="ApIndexCipher5G3" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -835,28 +870,28 @@ strApName=str1.substring(str1.indexOf("ApName=")+6,str1.indexOf('&'))
 						</td>
 						<td class="tabWidthFont40">
 							<%	if (cmdElemValue[revCmdElemString["ApHideSSID5G4"]] == "true") then	%>
-							<input id="ApHideSSID5G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G4" checked="checked" />
+							<input id="ApHideSSID5G4" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G4" checked="checked" />
 							<%	else	%>
-							<input id="ApHideSSID5G4" class="cbi-input-checkbox" type="checkbox" name="ApHideSSID5G4" />
+							<input id="ApHideSSID5G4" class="cbi-input-checkbox" type="checkbox" value="true" name="ApHideSSID5G4" />
 							<%	end	%>
 							<span class="cbi-value-helpicon"><img src="/luci-static/resources/cbi/help.gif" alt="help" /></span>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApSecurityMode5G4" name="ApSecurityMode5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApSecurityMode5G4']])%>" onclick="fSecurityMode('ApSecurityMode5G4');" >
-							<option id="cbi-network-wan-proto-static" value="1">No Encryption</option>
-							<option id="cbi-network-wan-proto-static" value="2">WPA-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="3">WPA2-PSK</option>
-							<option id="cbi-network-wan-proto-static" value="4">WPA-PSK/WPA2-PSK Mixed mode</option>
-							<option id="cbi-network-wan-proto-static" value="5">WPA-EAP</option>
-							<option id="cbi-network-wan-proto-static" value="6">WPA2-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="0">No Encryption</option>
+							<option id="cbi-network-wan-proto-static" value="1">WPA-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="2">WPA2-PSK</option>
+							<option id="cbi-network-wan-proto-static" value="3">WPA-PSK/WPA2-PSK Mixed mode</option>
+							<option id="cbi-network-wan-proto-static" value="4">WPA-EAP</option>
+							<option id="cbi-network-wan-proto-static" value="5">WPA2-EAP</option>
 							</select>
 						</td>
 						<td class="tabWidthFont100" >
 							<select id="ApIndexCipher5G4" name="ApIndexCipher5G4" value="<%=pcdata(cmdElemValue[revCmdElemString['ApIndexCipher5G4']])%>" >
-							<option id="cbi-network-wan-proto-static" value="1">auto</option>
-							<option id="cbi-network-wan-proto-static" value="2">Force CCMP(AES)</option>
-							<option id="cbi-network-wan-proto-static" value="3">Forece TKIP</option>
-							<option id="cbi-network-wan-proto-static" value="4">Force TKIP and CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="0">auto</option>
+							<option id="cbi-network-wan-proto-static" value="1">Force CCMP(AES)</option>
+							<option id="cbi-network-wan-proto-static" value="2">Forece TKIP</option>
+							<option id="cbi-network-wan-proto-static" value="3">Force TKIP and CCMP(AES)</option>
 							</select>
 						</td>
 						<td class="tabWidthFont80" >
@@ -1117,7 +1152,7 @@ function fSecurityMode(arg, disbl)
   var seValue=securityModeSe.value;
   if (arg == "ApSecurityMode2.4G1")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    if ((seValue == "4"||seValue == "5") && (disbl!==true))
     {
       console.log('ok');
       document.getElementById("PrimaryIP2.4G1").disabled=false;
@@ -1139,7 +1174,7 @@ function fSecurityMode(arg, disbl)
   }
   else if(arg == "ApSecurityMode2.4G2")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    if ((seValue == "4"||seValue == "5") && (disbl!==true))
     {
       document.getElementById("PrimaryIP2.4G2").disabled=false;
       document.getElementById("PrimaryIPPort2.4G2").disabled=false;
@@ -1160,7 +1195,7 @@ function fSecurityMode(arg, disbl)
   }
   else if(arg == "ApSecurityMode2.4G3")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    if ((seValue == "4"||seValue == "5") && (disbl!==true))
     {
       document.getElementById("PrimaryIP2.4G3").disabled=false;
       document.getElementById("PrimaryIPPort2.4G3").disabled=false;
@@ -1181,7 +1216,7 @@ function fSecurityMode(arg, disbl)
   }
   else if(arg == "ApSecurityMode2.4G4")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!==true))
+    if ((seValue == "4"||seValue == "5") && (disbl!==true))
     {
       document.getElementById("PrimaryIP2.4G4").disabled=false;
       document.getElementById("PrimaryIPPort2.4G4").disabled=false;
@@ -1202,7 +1237,7 @@ function fSecurityMode(arg, disbl)
   }
   else if (arg == "ApSecurityMode5G1")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    if ((seValue == "4"||seValue == "5") && (disbl!=true))
     {
 
       document.getElementById("PrimaryIP5G1").disabled=false;
@@ -1224,7 +1259,7 @@ function fSecurityMode(arg, disbl)
   }
   else if (arg == "ApSecurityMode5G2")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    if ((seValue == "4"||seValue == "5") && (disbl!=true))
     {
 
       document.getElementById("PrimaryIP5G2").disabled=false;
@@ -1246,7 +1281,7 @@ function fSecurityMode(arg, disbl)
   }
   else if (arg == "ApSecurityMode5G3")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    if ((seValue == "4"||seValue == "5") && (disbl!=true))
     {
 
       document.getElementById("PrimaryIP5G3").disabled=false;
@@ -1268,7 +1303,7 @@ function fSecurityMode(arg, disbl)
   }
   else if (arg == "ApSecurityMode5G4")
   {
-    if ((seValue == "5"||seValue == "6") && (disbl!=true))
+    if ((seValue == "4"||seValue == "5") && (disbl!=true))
     {
 
       document.getElementById("PrimaryIP5G4").disabled=false;
