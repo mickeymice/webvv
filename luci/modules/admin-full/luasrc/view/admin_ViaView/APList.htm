@@ -1,4 +1,5 @@
-<%#
+<%
+--[[
 LuCI - Lua Configuration Interface
 Copyright 2008-2009 Steven Barth <steven@midlink.org>
 Copyright 2008-2011 Jo-Philipp Wich <xm@subsignal.org>
@@ -21,9 +22,10 @@ $Id$
  NO         Data     Revised by       Item       Description
 1.0.0.1   2013/07/09  Rock Yang       ...       First release
 
--%>
+--]]
+%>
 
-<%-
+<%
 	require "bit"
 	require "luci.sys"
 	require "luci.tools.webadmin"
@@ -184,12 +186,7 @@ $Id$
 		i = i+1
 	end
 
-
-	tabRedir     = luci.http.formvalue("redir", true)
-	tabRedir1    = luci.http.formvalue("redir1", true)
-
-	local stra = "Shuant Test"
--%>
+%>
 
 <%+header%>
 
@@ -211,7 +208,6 @@ $Id$
 	<div class="cbi-map-descr"><%:The AP list for this AC to control%></div>
 
 <h1>AP number is: <%=pcdata(apNumIndex-1)%></h1>
-<h1>command receive: <%=pcdata(cmdRecArray[apNumIndex-1])%></h1>
 <br />
 
 	<fieldset class="cbi-section" id="cbi-table-table">
@@ -246,15 +242,14 @@ $Id$
 				<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
 					<td class="tabWidthFont160">
 						<input type="text" onchange="" name="ListApNamei" id="ListApNamei<%=pcdata(i)%>" value="<%=pcdata(apNameArray[i])%>" style="width:100px" />
-						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="location.href='<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName='+document.getElementById('ListApNamei<%=pcdata(i)%>').value+'&amp;IPAddress=<%=pcdata(ipAddrArray[i])%>&amp;num2=gg' " style="width:50px" />
+						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="funAjaxStart(document.getElementById('ListApNamei<%=pcdata(i)%>').value ,'<%=pcdata(ipAddrArray[i])%>'); " style="width:50px" />
 					</td>
 					<!--
 					<td class="tabWidthFont160">
 						<input type="text" onchange="" name="ListApNamei" id="ListApNamei<%=pcdata(i)%>" value="<%=pcdata(apNameArray[i])%>" style="width:100px" />
-						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="document.getElementById('APName').value='<%=pcdata(apNameArray[i])%>'; document.getElementById('IPAddress').value='<%=pcdata(ipAddrArray[i])%>'; document.getElementById('ListApName').value=document.getElementById('ListApNamei<%=pcdata(i)%>').value " style="width:50px" />
+						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="location.href='<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName='+document.getElementById('ListApNamei<%=pcdata(i)%>').value+'&amp;IPAddress=<%=pcdata(ipAddrArray[i])%>&amp;num2=gg' " style="width:50px" />
 					</td>
 					-->
-
 					<td class="cbi-value-field"><%=pcdata(modelArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(ipAddrArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(macAddrArray[i])%></td>
@@ -279,13 +274,45 @@ $Id$
 
 <script>
 //<![CDATA[
-function fModifyApName(argApName,argIpAddr)
-{
-	console.log(argApName);
-	console.log(argIpAddr);
-}
+	var timeout=setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},30000);
+	//clearTimeout(timeout);
+	var xmlHttp;
+	function createXMLHttpRequest(){
+		if (window.XMLHttpRequest) {  // Non-IE browsers
+			xmlHttp = new XMLHttpRequest();
+		}
+		else if (window.ActiveXObject) {  //IE
+			xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		else {  //browsers doesn's support AJAX
+			alert("ApConfigSave.htm: XMLHttpRequest is not supported by this browser!");
+		}
+	}
 
+	function funAjaxStart(ListApName, IPAddress){
+		console.log(ListApName);
+		console.log(IPAddress);
 
+		createXMLHttpRequest();
+		var url = "<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName="+ListApName+"&IPAddress="+IPAddress;
+		xmlHttp.open("GET",url,true);
+		xmlHttp.onreadystatechange=callback;  //set server information function
+		xmlHttp.send(null);
+	}
+
+	function callback(){
+		if (xmlHttp.readyState == 4){
+			if (xmlHttp.status == 200)
+			{
+				var strResponse = xmlHttp.responseText;  // get the web server response message
+				//document.getElementById("StatusMessage").innerHTML = strResponse;
+                                console.log(xmlHttp.responseText);
+				alert(strResponse)
+				//setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},5000);
+			}
+		}
+	}
+//funAjaxStart();
 //]]>
 </script>
 
