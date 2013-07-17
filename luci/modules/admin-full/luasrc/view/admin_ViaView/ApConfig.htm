@@ -1,4 +1,5 @@
-<%#
+<%
+--[[
 LuCI - Lua Configuration Interface
 Copyright 2008 Steven Barth <steven@midlink.org>
 Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
@@ -18,7 +19,8 @@ $Id$
  NO         Data     Revised by       Item       Description
 1.0.0.1   2013/05/29  Rock Yang       ...       First release
 
--%>
+--]]
+%>
 
 <%+header%>
 
@@ -33,7 +35,7 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 </script>
 -->
 
-<%-
+<%
 	require "bit"
 	require "luci.sys"
 	require "luci.tools.webadmin"
@@ -197,17 +199,19 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 
 	strAPName = luci.http.formvalue("APName")
 	strIPAddress = luci.http.formvalue("IPAddress")
--%>
+%>
 
 
 <form class="inline" method="get" action="<%=controller%>/admin/ViaView/APList/ApConfigSave">
 
+<!--
 <h1>strIPAddress: <%=pcdata(strIPAddress)%></h1>
 <h1>command receive: <%=pcdata(cmdReceive)%></h1>
+-->
 
 <div class="cbi-map" id="cbi-dhcp">
 	<h2><a id="content" name="content"><%:AP Configuration%></a></h2>
-	<div class="cbi-map-descr"><%:Set AP's IP <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr>-Server <abbr title="Service Set Identifier">SSID </abbr>and 2.4G/5G wireless attribute %></div>
+	<div class="cbi-map-descr">Set AP's IP <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr>-Server <abbr title="Service Set Identifier">SSID </abbr>and 2.4G/5G wireless attribute </div>
 
 
 	<label>AP Name: </label>
@@ -1018,14 +1022,6 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 </div>
 	
 <div style="text-align:right">
-			<!--
-			<input type="text" name="redir" value="<%=pcdata(stra)%>" />
-			<input type="text" name="redir1" value="<%=pcdata(stra)%>" />
-			<input type="text" name="redir2" value="<%=pcdata(stra)%>" />
-			<input type="text" name="apInfo1" value="<%=pcdata(stra)%>" />
-			<input type="text" name="apName1" value="<%=pcdata(stra)%>" />
-			-->
-
 			<input class="cbi-button cbi-button-save" type="submit" value="<%:Save%>" />
 </div>
 </form>
