@@ -1,0 +1,319 @@
+<%
+--[[
+LuCI - Lua Configuration Interface
+Copyright 2008-2009 Steven Barth <steven@midlink.org>
+Copyright 2008-2011 Jo-Philipp Wich <xm@subsignal.org>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  ApConfigSave.htm
+* Author      :  Rock Yang
+* Data        :  2013/07/09
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/07/09  Rock Yang       ...       First release
+
+--]]
+%>
+
+<%
+	require "bit"
+	require "luci.sys"
+	require "luci.tools.webadmin"
+	require "nixio.fs"	
+
+	--get message from AC-app
+	local preamble = "viamanag"
+	local cmdRecArray = {}
+	local apNameArray = {}
+	local modelArray = {}
+	local ipAddrArray = {}
+	local macAddrArray = {}
+	local channelArray = {}
+	local statusArray = {}
+	local profileArray = {}
+	local groupArray = {}
+	apNumIndex = 1
+
+	local socket = require"socket"
+	local host   = "192.168.0.106"
+	local port   = "8888"
+
+	--use udp to communicate to AC app
+	local udp    = socket.udp()
+	udp:settimeout(10)
+	udp:setpeername(host,port)
+	--udp:sendto("test Message", host, port)
+	--udp:send("test message")
+	udp:send(preamble.."APListRequestStart")
+	while apNumIndex <= 255 do
+		local StrCmdReceive  = udp:receive()
+		if (StrCmdReceive) then
+			cmdRecArray[apNumIndex] = StrCmdReceive;
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestEnd")) then
+				break;
+			end
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestStart")) then
+				apNumIndex = apNumIndex+1
+			end
+		else
+			break;
+		end
+	end
+	udp:close()
+
+--[[
+	--doesn't use TCP 
+	local data, err = socket.connect(host, port)
+	if not data then
+		--fail(err)
+	else
+		data:setoption("tcp-nodelay", true)
+		data:settimeout(10)
+		data:send(preamble.."APListRequestStart".."\n")
+		while apNumIndex <= 255 do
+			cmdRecArray[apNumIndex], err = data:receive()
+
+			if err then 
+				break 
+			end
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestEnd")) then
+				break;
+			else
+			end
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestStart")) then
+				apNumIndex = apNumIndex+1
+			end
+		end
+		data:close()
+	end
+--]]
+
+	--get ap list message to varibale array
+	local i = 1
+	local element
+	while i < apNumIndex do
+		element = "APName="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				apNameArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				apNameArray[i] = strTmp
+			end
+		end
+		element = "Model="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				modelArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				modelArray[i] = strTmp
+			end
+		end
+		element = "IPAddress="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				ipAddrArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				ipAddrArray[i] = strTmp
+			end
+		end
+		element = "MACAddress="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				macAddrArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				macAddrArray[i] = strTmp
+			end
+		end
+		element = "Channel="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				channelArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				channelArray[i] = strTmp
+			end
+		end
+		element = "Status="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				statusArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				statusArray[i] = strTmp
+			end
+		end
+		element = "Profile="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				profileArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				profileArray[i] = strTmp
+			end
+		end
+		element = "Group="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				groupArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				groupArray[i] = strTmp
+			end
+		end
+
+		i = i+1
+	end
+
+%>
+
+<%+header%>
+
+<style type="text/css">
+	span:target {
+		color: blue;
+		text-decoration: underline;
+	}
+</style>
+
+<form method="post" action="<%=controller%>/admin/ViaView/APList/ApConfig">
+
+<input id="APName" type="hidden" name="APName" value="test"/>
+<input id="IPAddress" type="hidden" name="IPAddress"/>
+<input id="ListApName" type="hidden" name="ListApName"/>
+
+<div class="cbi-map" id="cbi-network">
+	<h2><a id="content" name="content"><%:AP List%></a></h2>
+	<div class="cbi-map-descr"><%:The AP list for this AC to control%></div>
+
+<h1>AP number is: <%=pcdata(apNumIndex-1)%></h1>
+<br />
+
+	<fieldset class="cbi-section" id="cbi-table-table">
+		<legend><%_Information for <abbr title="Access Point">AP</abbr>-List%></legend>
+
+		<div class="cbi-section-node">
+			<table class="cbi-section-table">
+				<tr class="cbi-section-table-titles">
+					<th class="cbi-section-table-cell"><%:AP Name(Modify)%></th>
+					<th class="cbi-section-table-cell"><%:Model%></th>
+					<th class="cbi-section-table-cell"><%:IP Address%></th>
+					<th class="cbi-section-table-cell"><%:MAC Address%></th>
+					<th class="cbi-section-table-cell"><%:Channel(GHz/GHz)%></th>
+					<th class="cbi-section-table-cell"><%:Status%></th>
+					<th class="cbi-section-table-cell"><%:Profile%></th>
+					<th class="cbi-section-table-cell"><%:Group%></th>
+					<th class="cbi-section-table-cell"><%:Modify%></th>
+				</tr>
+				<% 
+					local i = 1
+					while i < apNumIndex do
+				%>
+				<style>
+				.tabWidthFont160 {width:160px}
+				.tabWidthFont100 {width:100px}
+				.tabWidthFont100 input,.tabWidthFont100 select{font-size:11px;}
+				.tabWidthFont80 {width:80px}
+				.tabWidthFont80 input,.tabWidthFont80 select{font-size:11px;}
+				.tabWidthFont40 {width:40px}
+				.tabWidthFont40 input,.tabWidthFont40 select{font-size:11px;}                 
+				</style>
+				<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+					<td class="tabWidthFont160">
+						<input type="text" onchange="" name="ListApNamei" id="ListApNamei<%=pcdata(i)%>" value="<%=pcdata(apNameArray[i])%>" style="width:100px" />
+						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="funAjaxStart(document.getElementById('ListApNamei<%=pcdata(i)%>').value ,'<%=pcdata(ipAddrArray[i])%>'); " style="width:50px" />
+					</td>
+					<!--
+					<td class="tabWidthFont160">
+						<input type="text" onchange="" name="ListApNamei" id="ListApNamei<%=pcdata(i)%>" value="<%=pcdata(apNameArray[i])%>" style="width:100px" />
+						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="location.href='<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName='+document.getElementById('ListApNamei<%=pcdata(i)%>').value+'&amp;IPAddress=<%=pcdata(ipAddrArray[i])%>&amp;num2=gg' " style="width:50px" />
+					</td>
+					-->
+					<td class="cbi-value-field"><%=pcdata(modelArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(ipAddrArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(macAddrArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(channelArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(statusArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(profileArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(groupArray[i])%></td>
+					<td class="cbi-value-field"> <input type="submit" class="cbi-button cbi-button-edit" style="width:100px" onclick="document.getElementById('APName').value='<%=pcdata(apNameArray[i])%>'; document.getElementById('IPAddress').value='<%=pcdata(ipAddrArray[i])%>'"  name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
+					</td>
+					<!--<td class="cbi-value-field"> <input type="button" class="cbi-button cbi-button-edit" style="width:100px"  onclick="location.href='<%=controller%>/admin/ViaView/ApConfig?ApName=<%=pcdata(apNameArray[i])%>&amp;num=<%=pcdata(i)%>&amp;num2=<%=i%>'" name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
+					</td>
+					-->
+				</tr>
+				<% 	i=i+1 end %>
+			</table>
+		</div>
+	</fieldset>
+	<br />
+
+</div>
+</form>
+
+<script>
+//<![CDATA[
+	var timeout=setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},30000);
+	//clearTimeout(timeout);
+	var xmlHttp;
+	function createXMLHttpRequest(){
+		if (window.XMLHttpRequest) {  // Non-IE browsers
+			xmlHttp = new XMLHttpRequest();
+		}
+		else if (window.ActiveXObject) {  //IE
+			xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		else {  //browsers doesn's support AJAX
+			alert("ApConfigSave.htm: XMLHttpRequest is not supported by this browser!");
+		}
+	}
+
+	function funAjaxStart(ListApName, IPAddress){
+		console.log(ListApName);
+		console.log(IPAddress);
+
+		createXMLHttpRequest();
+		var url = "<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName="+ListApName+"&IPAddress="+IPAddress;
+		xmlHttp.open("GET",url,true);
+		xmlHttp.onreadystatechange=callback;  //set server information function
+		xmlHttp.send(null);
+	}
+
+	function callback(){
+		if (xmlHttp.readyState == 4){
+			if (xmlHttp.status == 200)
+			{
+				var strResponse = xmlHttp.responseText;  // get the web server response message
+				//document.getElementById("StatusMessage").innerHTML = strResponse;
+                                console.log(xmlHttp.responseText);
+				alert(strResponse)
+				//setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},5000);
+			}
+		}
+	}
+//funAjaxStart();
+//]]>
+</script>
+
+<%+footer%>
