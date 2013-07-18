@@ -1,0 +1,75 @@
+<%
+--[[
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+	http://www.apache.org/licenses/LICENSE-2.0
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  ApNameSave.htm
+* Author      :  Rock Yang
+* Data        :  2013/07/09
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/07/09  Rock Yang       ...       First release
+
+--]]
+%>
+
+
+<%
+	require "bit"
+	require "luci.sys"
+	require "luci.tools.webadmin"
+	require "nixio.fs"	
+
+	--send message to AC-app
+	local preamble = "viamanag"
+	local index = 1
+
+	local cmdSend
+	local cmdReceive
+	local strRetStatus
+	local strIPAddress = luci.http.formvalue("IPAddress")
+	local strListApName = luci.http.formvalue("ListApName")
+	
+	--setp 1. get ApNa parameter and construct the send command
+	cmdSend = preamble.."APConfigurationNameSave ".."IPAddress="..strIPAddress.." ".."APName="..strListApName
+
+	local socket = require"socket"
+	local host   = "192.168.0.106"
+	local port   = "8888"
+
+	--use udp to communicate to AC app
+	local udp    = socket.udp()
+	udp:settimeout(10)
+	udp:setpeername(host,port)
+	--udp:sendto("test Message", host, port)
+	--udp:send("test message")
+	udp:send(cmdSend)
+
+	cmdReceive  = udp:receive()
+	udp:close()
+
+	if (cmdReceive) then
+		if (string.find(cmdReceive, preamble.."APConfigurationNameSave".." ".."Status=")) then
+			local strTmp = string.sub(cmdReceive, string.find(cmdReceive, "Status="),-1)
+			strTmp = string.sub(strTmp, string.len("Status=")+1,-1)
+			strRetStatus = strTmp
+		else
+			strRetStatus = "Failure"
+		end
+	else
+		strRetStatus = "Time out"
+	end
+
+	--print(cmdSend)
+	print("Status:"..strRetStatus)
+%>
+

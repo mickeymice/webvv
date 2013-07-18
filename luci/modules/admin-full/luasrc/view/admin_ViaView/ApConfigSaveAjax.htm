@@ -1,0 +1,81 @@
+<%
+--[[
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+	http://www.apache.org/licenses/LICENSE-2.0
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  ApConfigSave.htm
+* Author      :  Rock Yang
+* Data        :  2013/05/29
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/05/29  Rock Yang       ...       First release
+
+--]]
+%>
+
+
+<%
+	
+	require "bit"
+	require "luci.sys"
+	require "luci.tools.webadmin"
+	require "nixio.fs"	
+
+
+	--step 1. send message to AC-app and get socket source port from the up page
+	local preamble = "viamanag"
+	local cmdReceive
+	local strRetStatus
+	local localIp
+	local localPort = luci.http.formvalue("localPort")
+	if localPort then
+
+	else
+		localPort="1234"
+	end
+	local localPort2
+
+	--setp 2. receive the satus for ap configuration set command send
+	local socket = require"socket"
+	local host   = "192.168.0.106"
+	local port   = "8888"
+	local udp    = socket.udp()
+	udp:settimeout(120)
+	udp:setsockname('*',tonumber(localPort))
+	--udp:setsockname('*',0x1234)
+	udp:setpeername(host,port)
+	--udp:sendto("test Message", host, port)
+	--udp:send("test message")
+	--localIp, localPort2 = udp:getsockname()
+	cmdReceive  = udp:receive()
+	udp:close()
+
+	if (cmdReceive) then
+		if (string.find(cmdReceive, preamble.."APConfigurationStart".." ".."Status=")) then
+			local strTmp = string.sub(cmdReceive, string.find(cmdReceive, "Status="),-1)
+			strTmp = string.sub(strTmp, string.len("Status=")+1,-1)
+			strRetStatus = strTmp
+		else
+			strRetStatus = "Failure"
+		end
+	else
+		strRetStatus = "Time out"
+	end
+
+	--luci.http.write(cmdReceive)
+	--luci.http.write(strRetStatus)
+	--luci.http.write("test")
+	--print(cmdReceive)
+	print(strRetStatus)
+	--print("shuang")
+%>
+
