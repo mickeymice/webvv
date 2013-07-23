@@ -202,7 +202,7 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 %>
 
 
-<form class="inline" method="get" action="<%=controller%>/admin/ViaView/APList/ApConfigSave">
+<form class="inline" onsubmit="return validate_form(this)" method="get" action="<%=controller%>/admin/ViaView/APList/ApConfigSave">
 
 <!--
 <h1>strIPAddress: <%=pcdata(strIPAddress)%></h1>
@@ -1025,9 +1025,96 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 			<input class="cbi-button cbi-button-save" type="submit" value="<%:Save%>" />
 </div>
 </form>
+<script type="text/javascript">
 
-<script>
-//<![CDATA[
+function validate_ipAddress(field,alerttxt)
+{
+	//var re = /((?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d))/;
+	var re = /^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+	with (field) {
+		if(!re.test(value)) {
+			field.focus();
+			alert(alerttxt);
+			return false;
+		} else {
+			return true;
+		}
+	}
+}
+
+function validate_unsignedInt(field,alerttxt)
+{	
+	var v = document.getElementById(field).value;
+	with (field) {
+		if(isNaN(v)||v < 0) {
+			alert(alerttxt);
+			return false;
+		} else {
+			return true;
+		}
+	}
+}
+
+function validate_scanInterval(field,alerttxt)
+{
+	with (field) {
+		if(!ApScanStatus.checked) {
+			return true;
+		}
+		if(value == ""||isNaN(value)) {
+			field.focus();
+			alert('Scan Interval must be a numeric');
+			return false;
+		}
+		i = parseInt(field.value);
+		if(i < 5 || i > 65535) {
+			field.focus();
+			alert(alerttxt);
+			return false
+		} else {
+			return true;
+		}
+	}
+}
+
+function validate_form(thisform)
+{
+	with (thisform) {
+		var varEnable;
+		var chkStatus;
+		
+		/*Basic information checking*/
+		if (!validate_scanInterval(ApScanInterval, "Scan Interval must in range 5-65535")||
+			!validate_ipAddress(ApIpAddress," ip address is not valid")||
+			!validate_ipAddress(ApNetmask, "netmask is not valid")||
+			!validate_ipAddress(ApGateway, "gateway is not valid")) {
+			return false;
+		}
+
+		/*11bgn parameters checking*/
+		varEnable = document.getElementById("Ap2.4GEnable");
+		chkStatus = varEnable.checked;
+		if(chkStatus) {
+			if(!validate_unsignedInt("ApClientNumber2.4G", "client number must be a number greater than 0")||
+				!validate_unsignedInt("ApFragmentation2.4G", "fragmentation must be a number greater than 0")||
+				!validate_unsignedInt("ApRTSCTS2.4G", "rts/cts must be a number greater than 0")) {
+				return false;
+			}
+		}
+		
+		/*11an parameters checking*/
+		varEnable = document.getElementById("Ap5GEnable");
+		chkStatus = varEnable.checked;
+		if(chkStatus) {
+			if(!validate_unsignedInt("ApClientNumber5G", "client number must be a number greater than 0")||
+				!validate_unsignedInt("ApFragmentation5G", "fragmentation must be a number greater than 0")||
+				!validate_unsignedInt("ApRTSCTS5G", "rts/cts must be a number greater than 0")) {
+				return false;
+			}
+		}
+	}
+}
+
 function fDhcpEnable(arg) {
   var dhcp_ebl=document.getElementById(arg);
   var status=dhcp_ebl.checked;
@@ -1508,6 +1595,6 @@ fDhcpEnable("ApDhcpEnable");
 fDhcpEnable("ApScanStatus");
 f24G5GEnable("Ap2.4GEnable");
 f24G5GEnable("Ap5GEnable");
-//]]>
+
 </script>
 <%+footer%>
