@@ -1,0 +1,230 @@
+<%
+    local h    = require "luci.http"
+    local io   = require "nixio"
+    local socket = require "socket"
+
+    local fd   = nil
+    local flag = true
+	local path = "/tmp/firmware.img"
+	
+	--udp socket communication
+	apNumIndex = 1
+	local host   = "localhost"
+	local port   = "8888"
+	local preamble = "viamanag"
+	local cmdRecArray = {}
+	local apNameArray = {}
+	local modelArray = {}
+	local ipAddrArray = {}
+	local macAddrArray = {}
+	local channelArray = {}
+	local statusArray = {}
+	local profileArray = {}
+	local groupArray = {}
+
+	
+    -- except the statement sentence, no code block is available before the setfilehandler
+    h.setfilehandler(
+        function(field, chunk, eof)
+            if not field then return end
+            
+            if flag then
+                h.write("uploading...")
+                flag = false
+            end         
+            
+            if not fd then
+                fd = io.open(path, "w")
+            end
+            
+            fd:write(chunk)
+            
+            if eof and fd then
+                fd:close()
+                fd = nil
+                h.write("<br />upload done.")
+            end
+		end
+    )
+
+    -- this section must be put under setfilehandler
+    if h.formvalue("act") == "update" then
+        return
+    end
+    
+    -- use udp to communicate to AC app
+	local udp    = socket.udp()
+	udp:settimeout(10)
+	udp:setpeername(host,port)
+	udp:send(preamble.."APListRequestStart")
+	while apNumIndex <= 255 do
+		local StrCmdReceive  = udp:receive()
+		if (StrCmdReceive) then
+			cmdRecArray[apNumIndex] = StrCmdReceive;
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestEnd")) then
+				break;
+			end
+			if (string.find(cmdRecArray[apNumIndex], preamble.."APListRequestStart")) then
+				apNumIndex = apNumIndex+1
+			end
+		else
+			break;
+		end
+	end
+	udp:close()
+
+	--get ap list message to varibale array
+	local i = 1
+	local element
+	while i < apNumIndex do
+		element = "APName="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				apNameArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				apNameArray[i] = strTmp
+			end
+		end
+		element = "Model="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				modelArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				modelArray[i] = strTmp
+			end
+		end
+		element = "IPAddress="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				ipAddrArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				ipAddrArray[i] = strTmp
+			end
+		end
+		element = "MACAddress="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				macAddrArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				macAddrArray[i] = strTmp
+			end
+		end
+		element = "Channel="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				channelArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				channelArray[i] = strTmp
+			end
+		end
+		element = "Status="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				statusArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				statusArray[i] = strTmp
+			end
+		end
+		element = "Profile="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				profileArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				profileArray[i] = strTmp
+			end
+		end
+		element = "Group="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				groupArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				groupArray[i] = strTmp
+			end
+		end
+
+		i = i+1
+	end
+
+%>
+
+<%+header%>
+<script type="text/javascript" src="<%=resource%>/script/common.js"></script>
+
+<fieldset class="cbi-section">
+	<legend><%:Update Firmware / Apply Profile%></legend>
+	
+	<form id="update" name="update" action="<%=REQUEST_URI%>" method="post" enctype="multipart/form-data">
+	
+	<fieldset class="cbi-section">
+		<input type="hidden" name="act" value="update" />
+		Update Profile<input type="radio" name="updateOps" value="profile" />&nbsp;
+		Flash Firmware<input type="radio" name="updateOps" value="firmware" />&nbsp;
+
+		<input type="file" id="updatePackage" name="updatePackage"/>
+		<!-- <input type="submit" id="updateBtn" class="cbi-button cbi-button-apply" value="upgrade firmware" /> -->
+
+	</fieldset>
+	
+	<fieldset class="cbi-section">
+		<legend><%:AP List to be Upgraded%></legend>
+		<table class="cbi-section-table">
+			<tr class="cbi-section-table-titles">
+				<th class="cbi-section-table-cell">
+					<input type="checkbox" name="cbxAll" value="All" onclick="checkAll(this,'itemAP')" />
+				</th>
+				<th class="cbi-section-table-cell"><%:AP Name%></th>
+				<th class="cbi-section-table-cell"><%:Model%></th>
+				<th class="cbi-section-table-cell"><%:IP Address%></th>
+				<th class="cbi-section-table-cell"><%:MAC Address%></th>
+				<th class="cbi-section-table-cell"><%:Channel(GHz/GHz)%></th>
+				<th class="cbi-section-table-cell"><%:Status%></th>
+				<th class="cbi-section-table-cell"><%:Profile%></th>
+				<th class="cbi-section-table-cell"><%:Group%></th>
+			</tr>
+			<% 
+				local i = 1
+				while i < apNumIndex do
+			%>
+			<tr class="cbi-section-table-row cbi-rowstyle-1">
+				<td class="cbi-value-field">
+					<input type="checkbox" name="itemAP" value="<%:NAME1%>" />
+				</td>
+				<td class="cbi-value-field"><%=pcdata(apNameArray[i])%></td>
+				<td class="cbi-value-field"><%=pcdata(modelArray[i])%></td>
+				<td class="cbi-value-field"><%=pcdata(ipAddrArray[i])%></td>
+				<td class="cbi-value-field"><%=pcdata(macAddrArray[i])%></td>
+				<td class="cbi-value-field"><%=pcdata(channelArray[i])%></td>
+				<td class="cbi-value-field"><%=pcdata(statusArray[i])%></td>
+				<td class="cbi-value-field"><%=pcdata(profileArray[i])%></td>
+				<td class="cbi-value-field"><%=pcdata(groupArray[i])%></td>
+			</tr>
+			<% 	
+				i = i + 1 end 
+			%>
+		</table>
+	</fieldset>
+	<div class="cbi-page-actions">
+			<input class="cbi-button cbi-button-apply" type="submit" name="cbi.apply" onclick="" value="Save &#38; Apply" />					
+	</div>
+	<div class="clear"></div>
+	
+	</form>
+</fieldset>
+
+<%+footer%>
