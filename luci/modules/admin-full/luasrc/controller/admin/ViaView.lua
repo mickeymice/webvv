@@ -33,7 +33,9 @@ function index()
 	entry({"admin", "ViaView", "APList", "ApConfigSave"}, template("admin_ViaView/ApConfigSave"), nil).leaf = true
 	entry({"admin", "ViaView", "APList", "ApConfigSaveAjax"}, template("admin_ViaView/ApConfigSaveAjax"), nil).leaf = true
 	entry({"admin", "ViaView", "APList", "ApNameSave"}, template("admin_ViaView/ApNameSave"), nil).leaf = true
-	--entry({"admin", "ViaView", "ApConfig"}, template("admin_ViaView/ApConfig"), "AP config", 60).dependent=false
+	entry({"admin", "ViaView", "APUpdate"}, template("admin_ViaView/ApUpdate"), _("Update Firmware / Profile"), 2).dependent = false
+
+--entry({"admin", "ViaView", "ApConfig"}, template("admin_ViaView/ApConfig"), "AP config", 60).dependent=false
 
 
 
