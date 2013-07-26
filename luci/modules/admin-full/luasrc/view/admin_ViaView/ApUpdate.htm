@@ -26,7 +26,14 @@
     -- except the statement sentence, no code block is available before the setfilehandler
     h.setfilehandler(
         function(field, chunk, eof)
-            if not field then return end
+            if not field then
+				return
+			end
+			
+			if field.name == "profile" then
+					path = "/tmp/profile.txt"
+				end
+			end            
             
             if flag then
                 h.write("uploading...")
@@ -173,10 +180,10 @@
 	
 	<fieldset class="cbi-section">
 		<input type="hidden" name="act" value="update" />
-		Update Profile<input type="radio" name="updateOps" value="profile" />&nbsp;
-		Flash Firmware<input type="radio" name="updateOps" value="firmware" />&nbsp;
+		Update Profile<input type="radio" name="updateOps" value="profile" onclick="modifyName('targetFile', 'profile')" />&nbsp;
+		Flash Firmware<input type="radio" name="updateOps" value="firmware" onclick="modifyName('targetFile', 'firmware')" />&nbsp;
 
-		<input type="file" id="updatePackage" name="updatePackage"/>
+		<input type="file" id="targetFile" name=""/>
 		<!-- <input type="submit" id="updateBtn" class="cbi-button cbi-button-apply" value="upgrade firmware" /> -->
 
 	</fieldset>
@@ -201,7 +208,7 @@
 				local i = 1
 				while i < apNumIndex do
 			%>
-			<tr class="cbi-section-table-row cbi-rowstyle-1">
+			<tr class="cbi-section-table-row cbi-rowstyle-<%= i%2 %>">
 				<td class="cbi-value-field">
 					<input type="checkbox" name="itemAP" value="<%:NAME1%>" />
 				</td>

@@ -5,3 +5,9 @@ function checkAll(obj, cbxName)
 	for(i = 0; i < cbx.length; i++)
 		cbx[i].checked = obj.checked;
 }
+
+function modifyName(eid, targetName)
+{
+	var v = document.getElementById(eid);
+	v.name = targetName;
+}
