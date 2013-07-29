@@ -5,7 +5,7 @@
 
     local fd   = nil
     local flag = true
-	local path = "/tmp/firmware.img"
+	local path = nil
 	
 	--udp socket communication
 	apNumIndex = 1
@@ -31,9 +31,10 @@
 			end
 			
 			if field.name == "profile" then
-					path = "/tmp/profile.txt"
-				end
-			end            
+				path = "/tmp/profile.txt"
+			else
+				path = "/tmp/firmware.img"
+			end          
             
             if flag then
                 h.write("uploading...")
