@@ -37,7 +37,7 @@
 			end          
             
             if flag then
-                h.write("uploading...")
+                --h.write("uploading...")
                 flag = false
             end         
             
@@ -50,7 +50,11 @@
             if eof and fd then
                 fd:close()
                 fd = nil
-                h.write("<br />upload done.")
+                --h.write("<br />upload done.")
+                luci.template.render("admin_ViaView/Upgrade", {
+					status = true,
+					filename = path
+				})
             end
 		end
     )
