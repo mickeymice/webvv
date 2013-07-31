@@ -1,0 +1,10 @@
+<%+header%>
+<fieldset class="cbi-section">
+<legend><%:Update Status%></legend>
+<% if(status) then%>
+	<h1><%:The file has been upload at %><%=filename%></h1>
+<% else %>
+	<h1><%:upload file failed.%></h1>
+<%end%>
+</fieldset>
+<%+footer%>
