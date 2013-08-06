@@ -44,6 +44,7 @@
 #define DB_RD_FILE	DB_PATH "/radio/%s"
 #define DB_CN_FILE	DB_PATH "/connections"
 #define DB_LD_FILE	DB_PATH "/load"
+#define DB_CW_FILE	DB_PATH "/capwap/%s"
 
 #define IF_SCAN_PATTERN \
 	" %[^ :]:%u %u" \
@@ -53,6 +54,8 @@
 #define LD_SCAN_PATTERN \
 	"%f %f %f"
 
+#define CW_SCAN_PATTERN \
+	" %[^ :]:%u %u %u %u"
 
 struct file_map {
 	int fd;
@@ -311,14 +314,14 @@ static void iwinfo_close(void *iw)
 
 
 static int update_ifstat(
-	const char *ifname, uint32_t rxb, uint32_t rxp, uint32_t txb, uint32_t txp
+	const char *ifname, const char *argu, uint32_t rxb, uint32_t rxp, uint32_t txb, uint32_t txp
 ) {
 	char path[1024];
 
 	struct stat s;
 	struct traffic_entry e;
 
-	snprintf(path, sizeof(path), DB_IF_FILE, ifname);
+	snprintf(path, sizeof(path), argu, ifname);
 
 	if (stat(path, &s))
 	{
@@ -339,6 +342,38 @@ static int update_ifstat(
 
 	return update_file(path, &e, sizeof(struct traffic_entry));
 }
+
+/*update for capwap realtime graphic*/
+/*
+static int update_ifstat_cw(
+	const char *wtpname, uint32_t txb, uint32_t txp, uint32_t rxb, uint32_t rxp
+) {
+	char path[1024];
+
+	struct stat s;
+	struct traffic_entry e;
+
+	snprintf(path, sizeof(path), DB_CW_FILE, wtpname);
+
+	if (stat(path, &s))
+	{
+		if (init_file(path, sizeof(struct traffic_entry)))
+		{
+			fprintf(stderr, "Failed to init %s: %s\n",
+					path, strerror(errno));
+
+			return -1;
+		}
+	}
+
+	e.time = htonl(time(NULL));
+	e.rxb  = htonl(rxb);
+	e.rxp  = htonl(rxp);
+	e.txb  = htonl(txb);
+	e.txp  = htonl(txp);
+	return update_file(path, &e, sizeof(struct traffic_entry));
+}
+*/
 
 static int update_radiostat(
 	const char *ifname, uint16_t rate, uint8_t rssi, uint8_t noise
@@ -435,6 +470,7 @@ static int run_daemon(void)
 	float lf1, lf5, lf15;
 	char line[1024];
 	char ifname[16];
+	char wtpname[32];
 	int i;
 	void *iw;
 	struct sigaction sa;
@@ -498,13 +534,31 @@ static int run_daemon(void)
 				if (sscanf(line, IF_SCAN_PATTERN, ifname, &rxb, &rxp, &txb, &txp))
 				{
 					if (strncmp(ifname, "lo", sizeof(ifname)))
-						update_ifstat(ifname, rxb, rxp, txb, txp);
+						update_ifstat(ifname, DB_IF_FILE, rxb, rxp, txb, txp);
 				}
 			}
 
 			fclose(info);
 		}
-
+		
+		/*assemble the WTPs' rx tx message*/
+		if ((info = fopen("/tmp/ac/bwc", "r")) != NULL)/*read file from capwap*/
+		{
+			while (fgets(line, sizeof(line), info))
+			{
+				if (sscanf(line, CW_SCAN_PATTERN, wtpname, &rxb, &rxp, &txb, &txp))/*get wtpname rxb txb from file*/
+				{
+					printf("[%s, %u, %u, %u, %u]\n",
+						wtpname, txb, txp, rxb, rxp);
+					update_ifstat(wtpname, DB_CW_FILE, rxb, rxp, txb, txp);/*map virtual memory for every wtp*/
+				}
+				
+			}
+			
+			fclose(info);
+		}
+		
+		/*go wireless interfaces*/
 		if (iw)
 		{
 			for (i = 0; i < 5; i++)
@@ -638,6 +692,48 @@ static int run_dump_ifname(const char *ifname)
 	return 0;
 }
 
+/*
+ * @func  : dump wtp rx tx data
+ * @param : arg opt from command
+ */
+static int run_dump_wtp(const char *wtpname)
+{
+	int i;
+	char path[1024];
+	uint32_t avg;
+	struct file_map m;
+	struct traffic_entry *e;
+
+	check_daemon();
+	/*the wtpname specify a file which keeps their realtime rx tx data*/
+	snprintf(path, sizeof(path), DB_CW_FILE, wtpname);
+
+	if (mmap_file(path, sizeof(struct traffic_entry), &m))
+	{
+		fprintf(stderr, "Failed to open %s: %s\n", path, strerror(errno));
+		return 1;
+	}
+
+	for (i = 0; i < m.size; i += sizeof(struct traffic_entry))
+	{
+		e = (struct traffic_entry *) &m.mmap[i];
+
+		if (!e->time)
+			continue;
+
+		printf("[ %u, %s, %u %" PRIu32
+			   ", %u, %u]%s\n",
+			ntohl(e->time), wtpname,
+			ntohl(e->rxb), ntohl(e->rxp),
+			ntohl(e->txb), ntohl(e->txp),
+			((i + sizeof(struct traffic_entry)) < m.size) ? "," : "");
+	}
+
+	umap_file(&m);
+
+	return 0;
+}
+
 static int run_dump_radio(const char *ifname)
 {
 	int i;
@@ -751,7 +847,7 @@ int main(int argc, char *argv[])
 	for (opt = 0; opt < argc; opt++)
 		prognamelen += 1 + strlen(argv[opt]);
 
-	while ((opt = getopt(argc, argv, "t:i:r:cl")) > -1)
+	while ((opt = getopt(argc, argv, "t:i:r:w:cl")) > -1)
 	{
 		switch (opt)
 		{
@@ -768,7 +864,12 @@ int main(int argc, char *argv[])
 				if (optarg)
 					return run_dump_radio(optarg);
 				break;
-
+				
+			case 'w':
+				if (optarg)
+					return run_dump_wtp(optarg);
+				break;
+				
 			case 'c':
 				return run_dump_conns();
 
@@ -784,9 +885,10 @@ int main(int argc, char *argv[])
 		"Usage:\n"
 		"	%s [-t timeout] -i ifname\n"
 		"	%s [-t timeout] -r radiodev\n"
+		"	%s [-t timeout] -w wtpname\n"
 		"	%s [-t timeout] -c\n"
 		"	%s [-t timeout] -l\n",
-			argv[0], argv[0], argv[0], argv[0]
+			argv[0], argv[0], argv[0], argv[0], argv[0]
 	);
 
 	return 1;
