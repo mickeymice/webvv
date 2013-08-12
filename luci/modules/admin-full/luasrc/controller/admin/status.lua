@@ -38,6 +38,9 @@ function index()
 	entry({"admin", "status", "realtime", "connections"}, template("admin_status/connections"), _("Connections"), 4).leaf = true
 	entry({"admin", "status", "realtime", "connections_status"}, call("action_connections")).leaf = true
 
+	entry({"admin", "status", "realtime", "remote"}, template("admin_status/remote"), _("Remote Devices"), 5).leaf = true
+	entry({"admin", "status", "realtime", "remote_status"}, call("action_remote")).leaf = true
+
 	entry({"admin", "status", "nameinfo"}, call("action_nameinfo")).leaf = true
 end
 
