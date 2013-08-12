@@ -721,9 +721,9 @@ static int run_dump_wtp(const char *wtpname)
 		if (!e->time)
 			continue;
 
-		printf("[ %u, %s, %u %" PRIu32
-			   ", %u, %u]%s\n",
-			ntohl(e->time), wtpname,
+		printf("[ %u, %u, %" PRIu32
+			   ", %u, %u ]%s\n",
+			ntohl(e->time),
 			ntohl(e->rxb), ntohl(e->rxp),
 			ntohl(e->txb), ntohl(e->txp),
 			((i + sizeof(struct traffic_entry)) < m.size) ? "," : "");
