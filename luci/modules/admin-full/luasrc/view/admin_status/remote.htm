@@ -57,18 +57,20 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 
 	var data_wanted = Math.floor(width / step);
 	var data_fill   = 0;
-	var data_stamp  = 0;
+	var data_stamp = [ ];
+	var dev_max = 64;
 
-	var data_merg = [ ];
+	//var data_merg = [ ];
+	var data_merg = new Array();
 	var data_table;
-	var line_mg;
+	var line_mg = [ ];
 	
 	var label_25;
 	var label_50;
 	var label_75;
-
-	var label_text = [ ];
+	
 	var id_data = [ ];
+	var label_text = [ ];
 	var label_cur;
 	var label_avg;
 	var label_peak;
@@ -83,6 +85,11 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 	id_data[0] = 'cur';
 	id_data[1] = 'avg';
 	id_data[2] = 'peak';
+	
+	var colo = [];
+	colo[0] = 'blule';
+	colo[1] = 'yellow';
+	colo[2] = 'red';
 	
 	function bandwidth_label(bytes, br)
 	{
@@ -135,21 +142,26 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 				height      = svg.offsetHeight - 2;
 				data_wanted = Math.ceil(width / step);
 
-				/* prefill datasets */
-				for (var i = 0; i < data_wanted; i++)
-				{
-					data_merg[i] = 0;
-				}
-
 				/* find svg elements */
 				//line_mg = G.getElementById('pl1');
+				
+				/* prefill datasets */
+				for (var i = 0; i < dev_max; i++)
+				{
+					data_merg[i] = new Array();
+					data_stamp[i] = 0;
+					for (var j = 0; j < data_wanted; j++)
+					{
+						data_merg[i][j] = 0;
+					}
+				}
+				
 				data_table = document.getElementById('polylines');
 				
 				label_25 = G.getElementById('label_25');
 				label_50 = G.getElementById('label_50');
 				label_75 = G.getElementById('label_75');
-			
-
+				
 				label_scale   = document.getElementById('scale');
 				label_scalev   = document.getElementById('scalev');
 
@@ -174,106 +186,114 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 				}
 
 				label_scale.innerHTML = String.format('<%:(%d minute window, %d second interval)%>', data_wanted / 60, 3);
-				while (data_table.rows.length > 0)
-						data_table.rows[0].parentNode.removeChild(data_table.rows[0]);
 				
-				<%- for n, dev in pairs(remote_devices) do -%>
-				
-					console.log("remove the table rows:%d", data_table.rows.length);
-
-					line_mg = G.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-					line_mg.setAttribute('id', 'pl_<%=dev%>');
-					line_mg.setAttribute('points', '');
-					line_mg.setAttribute('style', 'fill:none;stroke:blue;');
-					label_25.parentNode.appendChild(line_mg);
-					
-					console.log("inserting table:%d", label_text.length);
-					
-					var tr = data_table.insertRow(-1);
-					
-					for(var i = 0; i < label_text.length; i++)
+				/* render datasets, start update interval */
+				XHR.poll(3, '<%=build_url("admin/status/realtime/remote_status", null)%>', null,
+					function(x, data)
 					{
-											
-						var td = tr.insertCell(0);
-						td.setAttribute('style', 'text-align:right; vertical-align:top');
-						
-						if(i > 0)
-						{
-							td.innerHTML = String.format(
-								'<strong style="border-bottom:2px solid black">%s</strong>', label_text[i]);
-						}
-						else
-						{
-							td.innerHTML = '<strong style="border-bottom:2px solid black"><%=dev%></strong>';
-						}
-						
-						var txt = tr.insertCell(1);
-						txt.setAttribute('id', String.format('bw_<%=dev%>_%s', id_data[i]));
-						console.log("create label object %s", String.format('bw_<%=dev%>_%s', id_data[i]));
-					}
-					
-					
-					/* render datasets, start update interval */
-					XHR.poll(3, '<%=build_url("admin/status/realtime/remote_status", dev)%>', null,
-						function(x, data)
-						{
-							var data_max   = 0;
-							var data_scale = 0;
+						var id;
+						var data_max   = 0;
+						var data_scale = 0;
 
-							var data_avg = 0;
-							var data_peak = 0;
+						var data_avg = 0;
+						var data_peak = 0;
+						
+						console.log("num:%d", data.length);
+						if(data.length > 0)
+						{
+							while (data_table.rows.length > 0)
+								data_table.rows[0].parentNode.removeChild(data_table.rows[0]);
+						}
 
-							console.log('starting poll <%=dev%>');
-							var id = String.format('bw_<%=dev%>_cur');
+						for(var i = 0; i < data.length; i++)
+						{
+							line_mg[i] = G.getElementById('pl_' + data[i][0]);
+							if(!line_mg[i])
+							{
+								console.log("create line for %s", data[i][0]);
+								line_mg[i] = G.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+								line_mg[i].setAttribute('id', 'pl_' + data[i][0]);
+								line_mg[i].setAttribute('points', '');
+								line_mg[i].setAttribute('style', 'fill:none;stroke:'+ colo[ i % 3 ]+ ';');
+								label_25.parentNode.appendChild(line_mg[i]);
+							}
+							
+							console.log("polling in:%s", data[i][0]);
+							
+							var tr = data_table.insertRow(-1);
+							
+							for(var j = 0; j < label_text.length; j++)
+							{
+													
+								var td = tr.insertCell(-1);
+								td.setAttribute('style', 'text-align:right; vertical-align:top');
+								
+								if(j > 0)
+								{
+									td.innerHTML = String.format(
+										'<strong style="border-bottom:2px solid black">%s</strong>', label_text[j]);
+								}
+								else
+								{
+									td.innerHTML = '<strong style="border-bottom:2px solid black">' + data[i][0] + '</strong>';
+								}
+								
+								var txt = tr.insertCell(-1);
+								txt.setAttribute('id', String.format('bw_%s_%s', data[i][0],id_data[j]));
+								console.log("create label object %s", String.format('bw_%s_%s', data[i][0], id_data[j]));
+							}
+
+							console.log('starting poll %s', data[i][0]);
+							id = String.format('bw_%s_cur', data[i][0]);
 							label_cur  = document.getElementById(id);
-							id = String.format('bw_<%=dev%>_avg');
+							id = String.format('bw_%s_avg', data[i][0]);
 							label_avg  = document.getElementById(id);
-							id = String.format('bw_<%=dev%>_peak');
+							id = String.format('bw_%s_peak',data[i][0]);
 							label_peak = document.getElementById(id);
 							
 							label_scalev.innerHTML = String.format('<%:(%d)%>', data.length);
 							
-							for (var i = data_stamp ? 0 : 1; i < data.length; i++)
+							for (var j = 1; j < data[i].length; j++)
 							{
 								/* skip overlapping entries */
-								if (data[i][TIME] <= data_stamp)
+								if (data[i][j][TIME] <= data_stamp[i])
 									continue;
 
 								/* normalize difference against time interval */
-								if (i > 0)
+								if (j > 1)
 								{
-									var time_delta = data[i][TIME] - data[i-1][TIME];
-									var data_delta = (data[i][RXB] - data[i-1][RXB]) + (data[i][TXB] - data[i-1][TXB]);
+									var time_delta = data[i][j][TIME] - data[i][j-1][TIME];
+									var data_delta = (data[i][j][RXB] - data[i][j-1][RXB]) + (data[i][j][TXB] - data[i][j-1][TXB]);
 									if (time_delta)//&& data_delta)
 									{
-										data_merg.push(data_delta / (2 * time_delta));
-										console.log('data:%d time_delta:%d', ((data[i][RXB] - data[i-1][RXB]) + (data[i][TXB] - data[i-1][TXB])) / (2 * time_delta), time_delta);
+										data_merg[i].push(data_delta / (2 * time_delta));
+										//console.log('data:%d time_delta:%d', (data_delta) / (2 * time_delta), time_delta);
 									}
 								}
 							}
 
 							/* cut off outdated entries */
-							data_merg = data_merg.slice(data_merg.length - data_wanted, data_merg.length);
+							data_merg[i] = data_merg[i].slice(data_merg[i].length - data_wanted, data_merg[i].length);
 
 							/* find peak */
-							for (var i = 0; i < data_merg.length; i++)
+							for (var j = 0; j < data_merg[i].length; j++)
 							{
-								data_max = Math.max(data_max, data_merg[i]);
+								data_max = Math.max(data_max, data_merg[i][j]);
 								
-								data_peak = Math.max(data_peak, data_merg[i]);
+								data_peak = Math.max(data_peak, data_merg[i][j]);
 
-								if (i > 0)
+								if (j > 0)
 								{
-									data_avg = (data_avg + data_merg[i]) / 2;
+									data_avg = (data_avg + data_merg[i][j]) / 2;
 								}
 								else
 								{
-									data_avg = data_merg[i];
+									data_avg = data_merg[i][j];
 								}
 							}
 
 							/* remember current timestamp, calculate horizontal scale */
-							data_stamp = data[data.length-1][TIME];
+							data_stamp[i] = data[i][data[i].length-1][TIME];
 							data_scale = height / (data_max * 1.1);
 
 
@@ -282,11 +302,11 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 
 							var y_mg = 0;
 
-							for (var i = 0; i < data_merg.length; i++)
+							for (var j = 0; j < data_merg[i].length; j++)
 							{
-								var x = i * step;
+								var x = j * step;
 
-								y_mg = height - Math.floor(data_merg[i] * data_scale);
+								y_mg = height - Math.floor(data_merg[i][j] * data_scale);
 
 								pt_mg += ' ' + x + ',' + y_mg;
 							}
@@ -294,18 +314,18 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 							pt_mg += ' ' + width + ',' + y_mg + ' ' + width + ',' + height;
 
 
-							line_mg.setAttribute('points', pt_mg);
+							line_mg[i].setAttribute('points', pt_mg);
 
 							label_25.firstChild.data = bandwidth_label(1.1 * 0.25 * data_max);
 							label_50.firstChild.data = bandwidth_label(1.1 * 0.50 * data_max);
 							label_75.firstChild.data = bandwidth_label(1.1 * 0.75 * data_max);
 
-							label_cur.innerHTML = bandwidth_label(data_merg[data_merg.length-1], true);
+							label_cur.innerHTML = bandwidth_label(data_merg[i][data_merg[i].length-1], true);
 							label_avg.innerHTML = bandwidth_label(data_avg, true);
 							label_peak.innerHTML = bandwidth_label(data_peak, true);
-						}
-					);
-				<%- end -%>
+						}//for
+					}//function
+				);//XHR.poll
 			}
 		}, 1000
 	);
@@ -313,7 +333,7 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 
 <h2><a id="content" name="content"><%:Realtime Traffic%></a></h2>
 
-<embed id="rtsvg" style="width:100%; height:300px; border:1px solid #000000; background-color:#FFFFFF" src="<%=resource%>/remote.svg" />
+<embed id="rtsvg" style="width:100%; height:600px; border:1px solid #000000; background-color:#FFFFFF" src="<%=resource%>/remote.svg" />
 <div style="text-align:right"><small id="scale">-</small></div>
 <div style="text-align:right"><small id="scalew"><%=(luci.sys.exec(cmd_show_ap))%>-<%=pcdata(dev)%></small></div>
 <div style="text-align:right"><small id="scalev">-</small></div>
