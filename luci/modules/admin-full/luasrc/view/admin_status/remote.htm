@@ -41,6 +41,7 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 <%+header%>
 
 <script type="text/javascript" src="<%=resource%>/cbi.js"></script>
+<link type="text/css" rel="stylesheet" href="<%=resource%>/remote_dev.css" />
 <script type="text/javascript">//<![CDATA[
 	var rtxhr = new XHR();
 
@@ -87,9 +88,26 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 	id_data[2] = 'peak';
 	
 	var colo = [];
-	colo[0] = 'blule';
+	colo[0] = 'blue';
 	colo[1] = 'yellow';
 	colo[2] = 'red';
+	colo[3] = 'green';
+	colo[4] = 'fuchsia';
+	colo[5] = 'maroon';
+	colo[6] = 'lime';
+	colo[7] = 'purple';
+	
+	function MouseOver()
+	{
+		var obj = G.getElementById('pl_' + this.id);
+		obj.setAttribute('class', 'blod_line');
+	}
+	
+	function MouseOut()
+	{
+		var obj = G.getElementById('pl_' + this.id);
+		obj.setAttribute('class', 'slim_line');
+	}
 	
 	function bandwidth_label(bytes, br)
 	{
@@ -113,7 +131,7 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 
 		return String.format("%f %s%s(%f %s)",
 			kbi.toFixed(2), ubi,
-			br ? '<br />' : ' ',
+			br ? '-' : ' ',
 			kby.toFixed(2), uby
 		);
 	}
@@ -186,9 +204,10 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 				}
 
 				label_scale.innerHTML = String.format('<%:(%d minute window, %d second interval)%>', data_wanted / 60, 3);
+				label_scalev.innerHTML = '<%=luci.http.formvalue("order")%>';
 				
 				/* render datasets, start update interval */
-				XHR.poll(3, '<%=build_url("admin/status/realtime/remote_status", null)%>', null,
+				XHR.poll(3, '<%=build_url("admin/status/realtime/remote_status", luci.http.formvalue("order"))%>', null,
 					function(x, data)
 					{
 						var id;
@@ -197,8 +216,14 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 
 						var data_avg = 0;
 						var data_peak = 0;
+
+						var poly_line = G.getElementsByTagName('polyline');
+						
+						while(poly_line.length > 0)
+							poly_line[0].parentNode.removeChild(poly_line[0]);
 						
 						console.log("num:%d", data.length);
+						
 						if(data.length > 0)
 						{
 							while (data_table.rows.length > 0)
@@ -207,6 +232,7 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 
 						for(var i = 0; i < data.length; i++)
 						{
+							line_mg[i] = null;
 							line_mg[i] = G.getElementById('pl_' + data[i][0]);
 							if(!line_mg[i])
 							{
@@ -214,33 +240,42 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 								line_mg[i] = G.createElementNS('http://www.w3.org/2000/svg', 'polyline');
 								line_mg[i].setAttribute('id', 'pl_' + data[i][0]);
 								line_mg[i].setAttribute('points', '');
-								line_mg[i].setAttribute('style', 'fill:none;stroke:'+ colo[ i % 3 ]+ ';');
+								line_mg[i].setAttribute('style', 'fill:'+colo[i % 3]+';stroke:'+ colo[i % 3]+ ';');
+								line_mg[i].setAttribute('class', 'slim_line');
 								label_25.parentNode.appendChild(line_mg[i]);
 							}
 							
 							console.log("polling in:%s", data[i][0]);
 							
 							var tr = data_table.insertRow(-1);
+							tr.className = 'row_style_' + (i%2);
 							
 							for(var j = 0; j < label_text.length; j++)
 							{
 													
 								var td = tr.insertCell(-1);
-								td.setAttribute('style', 'text-align:right; vertical-align:top');
+								//td.setAttribute('style', 'text-align:right; vertical-align:top');
 								
 								if(j > 0)
 								{
+									td.setAttribute('id', String.format('bw_%s_%s', data[i][0],id_data[j]));
 									td.innerHTML = String.format(
-										'<strong style="border-bottom:2px solid black">%s</strong>', label_text[j]);
+										'<strong>%s-</strong>', label_text[j]);
 								}
 								else
 								{
-									td.innerHTML = '<strong style="border-bottom:2px solid black">' + data[i][0] + '</strong>';
+									td.id = data[i][0];
+									td.innerHTML = '<strong style="border-bottom:2px solid '+colo[i % 3] +'">' + data[i][0] + '</strong>';
+									td.onmouseover = MouseOver;
+									td.onmouseout = MouseOut;
+									//td.onmouseover = function(){change_class_name(line_mg[i], 'blod_line');}
+									//td.onmouseout = function(){change_class_name(line_mg[i], 'slim_line');}
 								}
-								
+								/*
 								var txt = tr.insertCell(-1);
 								txt.setAttribute('id', String.format('bw_%s_%s', data[i][0],id_data[j]));
 								console.log("create label object %s", String.format('bw_%s_%s', data[i][0], id_data[j]));
+								*/
 							}
 
 							console.log('starting poll %s', data[i][0]);
@@ -251,7 +286,7 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 							id = String.format('bw_%s_peak',data[i][0]);
 							label_peak = document.getElementById(id);
 							
-							label_scalev.innerHTML = String.format('<%:(%d)%>', data.length);
+							//label_scalev.innerHTML = String.format('<%:(%d)%>', data.length);
 							
 							for (var j = 1; j < data[i].length; j++)
 							{
@@ -320,7 +355,7 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 							label_50.firstChild.data = bandwidth_label(1.1 * 0.50 * data_max);
 							label_75.firstChild.data = bandwidth_label(1.1 * 0.75 * data_max);
 
-							label_cur.innerHTML = bandwidth_label(data_merg[i][data_merg[i].length-1], true);
+							//label_cur.innerHTML = bandwidth_label(data_merg[i][data_merg[i].length-1], true);
 							label_avg.innerHTML = bandwidth_label(data_avg, true);
 							label_peak.innerHTML = bandwidth_label(data_peak, true);
 						}//for
@@ -333,18 +368,40 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 
 <h2><a id="content" name="content"><%:Realtime Traffic%></a></h2>
 
-<embed id="rtsvg" style="width:100%; height:600px; border:1px solid #000000; background-color:#FFFFFF" src="<%=resource%>/remote.svg" />
+<embed id="rtsvg" style="width:100%; height:300px; border:1px solid #000000; background-color:#FFFFFF" src="<%=resource%>/remote.svg" />
 <div style="text-align:right"><small id="scale">-</small></div>
 <div style="text-align:right"><small id="scalew"><%=(luci.sys.exec(cmd_show_ap))%>-<%=pcdata(dev)%></small></div>
 <div style="text-align:right"><small id="scalev">-</small></div>
 <br />
 
-<table id="polylines" style="width:100%; table-layout:fixed" cellspacing="5">
+<form>
+	<select style="width:auto;" id="order" name="order">
+		<% if luci.http.formvalue("order") == "descend" then %>
+			<option value="ascend">Ascend</option>
+			<option value="descend" selected="selected">Descend</option>
+		<% else %>
+			<option value="ascend" selected="selected">Ascend</option>
+			<option value="descend">Descend</option>			
+		<% end %>
+	</select>
+	<input class="cbi-button cbi-button-save" type="submit" value="Submit" />
+</form>
+<table style="width:100%">                                                                                                                            
+        <thead>                                                                                                                                        
+                <tr style="text-align:center;">                                                                                                                                                                                                                           
+                        <th><%:MAC Address%></th>
+                        <th><%:Average Value%></th>
+                        <th><%:Peak Value%></th>                                                                                                       
+                </tr>                                                                                                                                  
+        </thead>                                                                                                                                       
+</table>
+<div style="width:100%; height:200px; overflow-y:auto; overflow-x:hidden;">
+<table id="polylines" style="width:100%; table-layout:fixed; border-collapse:collapse;" cellspacing="5">
 		<tr style="text-align:center; vertical-align:top">
 			<td class="cbi-value-field" colspan="6">
 				<em><%:Collecting data...%></em>
 			</td>
 		</tr>
 </table>
-
+</div>
 <%+footer%>
