@@ -16,19 +16,7 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 	local dev
 	local remote_devices = { }
 	local cmd_show_ap = "ls /var/lib/luci-bwc/capwap"
-
-	--[[
-	local ntm = require "luci.model.network".init()
-	local devices = { }
-	for _, dev in luci.util.vspairs(luci.sys.net.devices()) do
-		if dev ~= "lo" and not ntm:ignore_interface(dev) then
-			devices[#devices+1] = dev
-		end
-	end
-
-	local curdev = luci.dispatcher.context.requestpath
-	      curdev = curdev[#curdev] ~= "bandwidth" and curdev[#curdev] or devices[1]
-	--]]
+	local sort_method = (luci.http.formvalue("order") and luci.http.formvalue("order")) or "ascend";
 
 	for w in string.gfind(luci.sys.exec(cmd_show_ap), "[%d%a]+") do
 		table.insert(remote_devices, w)
@@ -44,6 +32,8 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 <link type="text/css" rel="stylesheet" href="<%=resource%>/remote_dev.css" />
 <script type="text/javascript">//<![CDATA[
 	var rtxhr = new XHR();
+	var aObj = { };
+	var flag;
 
 	var G;
 	var TIME = 0;
@@ -52,50 +42,68 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 	var TXB  = 3;
 	var TXP  = 4;
 
+	var CUR  = 0;
+	var AVG  = 1;
+	var PEAK = 2;
+
 	var width  = 760;
 	var height = 300;
 	var step   = 5;
+	var dev_max    = 64;
+	var column_max = 3;
 
 	var data_wanted = Math.floor(width / step);
 	var data_fill   = 0;
-	var data_stamp = [ ];
-	var dev_max = 64;
-
-	//var data_merg = [ ];
-	var data_merg = new Array();
 	var data_table;
-	var line_mg = [ ];
-	
+
 	var label_25;
 	var label_50;
 	var label_75;
-	
-	var id_data = [ ];
-	var label_text = [ ];
-	var label_cur;
-	var label_avg;
-	var label_peak;
 
 	var label_scale;
 	var label_scalev;
 
-	label_text[0] = '<%:Current%>';
-	label_text[1] = '<%:Average%>';
-	label_text[2] = '<%:Peak%>';
+	var label_sign = ['cur', 'avg', 'peak'];
+	var label_sign_lua = ['<%:Current%>' , '<%:Average%>', '<%:Peak%>'];
+	var colo = ['blue', 'yellow', 'red', 'green',
+		'fuchsia', 'maroon', 'lime', 'purple'];
+
+	function initObj(mac, obj)
+	{
+
+		obj["data"] = [ ];
+		
+		for (var i = 0; i < data_wanted; i++)
+			obj["data"][i] = 0;
+		
+		obj["obj_polyline"] = G.getElementById('pl_' + mac);;
+		obj["obj_label"] = [null, null, null];
+		obj["data_stamp"] = -1;
+		obj["data_avg"] = -1;
+		//obj["data_max"] = -1;
+		obj["data_peak"] = -1;
+		obj["data_scale"] = -1;
+	}
 	
-	id_data[0] = 'cur';
-	id_data[1] = 'avg';
-	id_data[2] = 'peak';
-	
-	var colo = [];
-	colo[0] = 'blue';
-	colo[1] = 'yellow';
-	colo[2] = 'red';
-	colo[3] = 'green';
-	colo[4] = 'fuchsia';
-	colo[5] = 'maroon';
-	colo[6] = 'lime';
-	colo[7] = 'purple';
+	function reverseTable()
+	{
+		if(flag)
+			flag = -1;
+		else
+			flag = 0;
+
+		var rowObj = [];
+		var rows = document.getElementsByTagName('tbody')[0].rows;
+		for(var i = 0, len = rows.length; i<len; i++)
+		{
+			rowObj[i] = rows[i];
+		}
+		
+		rowObj.reverse();
+		 
+		for(var i = 0; i<rowObj.length; i++)
+			document.getElementsByTagName('tbody')[0].appendChild(rowObj[i]);
+	}
 	
 	function MouseOver()
 	{
@@ -160,22 +168,10 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 				height      = svg.offsetHeight - 2;
 				data_wanted = Math.ceil(width / step);
 
-				/* find svg elements */
-				//line_mg = G.getElementById('pl1');
+				/* find table object */
+				data_table = document.getElementById('table_lines');
 				
-				/* prefill datasets */
-				for (var i = 0; i < dev_max; i++)
-				{
-					data_merg[i] = new Array();
-					data_stamp[i] = 0;
-					for (var j = 0; j < data_wanted; j++)
-					{
-						data_merg[i][j] = 0;
-					}
-				}
-				
-				data_table = document.getElementById('polylines');
-				
+				/* get basic line obj */
 				label_25 = G.getElementById('label_25');
 				label_50 = G.getElementById('label_50');
 				label_75 = G.getElementById('label_75');
@@ -207,158 +203,146 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 				label_scalev.innerHTML = '<%=luci.http.formvalue("order")%>';
 				
 				/* render datasets, start update interval */
-				XHR.poll(3, '<%=build_url("admin/status/realtime/remote_status", luci.http.formvalue("order"))%>', null,
-					function(x, data)
+				XHR.poll(3, '<%=build_url("admin/status/realtime/remote_status", null)%>', null,
+					function(x, json)
 					{
-						var id;
 						var data_max   = 0;
-						var data_scale = 0;
-
-						var data_avg = 0;
-						var data_peak = 0;
-
-						var poly_line = G.getElementsByTagName('polyline');
 						
-						while(poly_line.length > 0)
-							poly_line[0].parentNode.removeChild(poly_line[0]);
+						console.log("num:%d", json.length);
 						
-						console.log("num:%d", data.length);
-						
-						if(data.length > 0)
+						if(json.length > 0)
 						{
 							while (data_table.rows.length > 0)
 								data_table.rows[0].parentNode.removeChild(data_table.rows[0]);
 						}
 
-						for(var i = 0; i < data.length; i++)
+						for(var i = 0; i < json.length; i++)
 						{
-							line_mg[i] = null;
-							line_mg[i] = G.getElementById('pl_' + data[i][0]);
-							if(!line_mg[i])
+							var data = json[i];
+							var MAC = json[i][0];
+							
+							/* init new AP */
+							if(!aObj[MAC])
 							{
-								console.log("create line for %s", data[i][0]);
-								line_mg[i] = G.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-								line_mg[i].setAttribute('id', 'pl_' + data[i][0]);
-								line_mg[i].setAttribute('points', '');
-								line_mg[i].setAttribute('style', 'fill:'+colo[i % 3]+';stroke:'+ colo[i % 3]+ ';');
-								line_mg[i].setAttribute('class', 'slim_line');
-								label_25.parentNode.appendChild(line_mg[i]);
+								aObj[MAC] = { };
+								initObj(MAC, aObj[MAC]);
 							}
-							
-							console.log("polling in:%s", data[i][0]);
-							
-							var tr = data_table.insertRow(-1);
-							tr.className = 'row_style_' + (i%2);
-							
-							for(var j = 0; j < label_text.length; j++)
+
+							var AP = aObj[MAC];
+							/* add polyline for AP */
+							if(!AP["obj_polyline"])
 							{
-													
-								var td = tr.insertCell(-1);
-								//td.setAttribute('style', 'text-align:right; vertical-align:top');
+								console.log("create line for %s", MAC);
 								
+								AP["obj_polyline"] = G.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+								AP["obj_polyline"].setAttribute('id', 'pl_' + MAC);
+								AP["obj_polyline"].setAttribute('points', '');
+								AP["obj_polyline"].setAttribute('style', 'fill:' + colo[i % 3] + ';stroke:'+ colo[i % 3] + ';');
+								AP["obj_polyline"].setAttribute('class', 'slim_line');
+								
+								label_25.parentNode.appendChild(AP["obj_polyline"]);
+							}
+
+							console.log("polling in:%s", MAC);
+							
+							/* insert a row for AP */
+							var tr = data_table.insertRow(flag);
+							tr.className = 'row_style_' + (i % 2);
+							
+							for(var j = 0; j < label_sign.length; j++)
+							{					
+								var td = tr.insertCell(-1);
+
 								if(j > 0)
 								{
-									td.setAttribute('id', String.format('bw_%s_%s', data[i][0],id_data[j]));
-									td.innerHTML = String.format(
-										'<strong>%s-</strong>', label_text[j]);
+									td.setAttribute('id', String.format('bw_%s_%s', MAC, label_sign[j]));
 								}
 								else
 								{
-									td.id = data[i][0];
-									td.innerHTML = '<strong style="border-bottom:2px solid '+colo[i % 3] +'">' + data[i][0] + '</strong>';
+									/*first column is the MAC list*/
+									td.setAttribute('id', String.format('%s', MAC));
+									td.innerHTML = '<strong style="border-bottom:2px solid ' + colo[i % 3] + '">' + MAC + '</strong>';
 									td.onmouseover = MouseOver;
 									td.onmouseout = MouseOut;
-									//td.onmouseover = function(){change_class_name(line_mg[i], 'blod_line');}
-									//td.onmouseout = function(){change_class_name(line_mg[i], 'slim_line');}
+									//td.onmouseover = function(){change_class_name(line_obj[i], 'blod_line');}
+									//td.onmouseout = function(){change_class_name(line_obj[i], 'slim_line');}
 								}
-								/*
-								var txt = tr.insertCell(-1);
-								txt.setAttribute('id', String.format('bw_%s_%s', data[i][0],id_data[j]));
-								console.log("create label object %s", String.format('bw_%s_%s', data[i][0], id_data[j]));
-								*/
 							}
 
-							console.log('starting poll %s', data[i][0]);
-							id = String.format('bw_%s_cur', data[i][0]);
-							label_cur  = document.getElementById(id);
-							id = String.format('bw_%s_avg', data[i][0]);
-							label_avg  = document.getElementById(id);
-							id = String.format('bw_%s_peak',data[i][0]);
-							label_peak = document.getElementById(id);
-							
-							//label_scalev.innerHTML = String.format('<%:(%d)%>', data.length);
-							
-							for (var j = 1; j < data[i].length; j++)
+							console.log('starting poll %s', MAC);
+							/* [0:cur] [1:avg] [2:peak] */
+							//AP["obj_label"][CUR] = document.getElementById(String.format('bw_%s_cur', MAC));
+							AP["obj_label"][AVG] = document.getElementById(String.format('bw_%s_avg', MAC));
+							AP["obj_label"][PEAK] = document.getElementById(String.format('bw_%s_peak', MAC));
+
+							/* assemble txrx data to array */
+							for (var j = 1; j < data.length; j++)
 							{
 								/* skip overlapping entries */
-								if (data[i][j][TIME] <= data_stamp[i])
+								if (data[j][TIME] <= AP["data_stamp"])
 									continue;
 
 								/* normalize difference against time interval */
 								if (j > 1)
 								{
-									var time_delta = data[i][j][TIME] - data[i][j-1][TIME];
-									var data_delta = (data[i][j][RXB] - data[i][j-1][RXB]) + (data[i][j][TXB] - data[i][j-1][TXB]);
-									if (time_delta)//&& data_delta)
+									var time_delta = data[j][TIME] - data[j-1][TIME];
+									var data_delta = (data[j][RXB] - data[j-1][RXB]) + (data[j][TXB] - data[j-1][TXB]);
+									if (time_delta && data_delta)
 									{
-										data_merg[i].push(data_delta / (2 * time_delta));
-										//console.log('data:%d time_delta:%d', (data_delta) / (2 * time_delta), time_delta);
+										AP["data"].push(data_delta / (2 * time_delta));
 									}
 								}
 							}
 
 							/* cut off outdated entries */
-							data_merg[i] = data_merg[i].slice(data_merg[i].length - data_wanted, data_merg[i].length);
+							AP["data"] = AP["data"].slice(AP["data"].length - data_wanted, AP["data"].length);
 
 							/* find peak */
-							for (var j = 0; j < data_merg[i].length; j++)
+							for (var j = 0; j < AP["data"].length; j++)
 							{
-								data_max = Math.max(data_max, data_merg[i][j]);
-								
-								data_peak = Math.max(data_peak, data_merg[i][j]);
+								data_max = Math.max(data_max, AP["data"][j]);
+								AP["data_peak"] = Math.max(AP["data_peak"], AP["data"][j]);
 
-								if (j > 0)
+								if (j > 1)
 								{
-									data_avg = (data_avg + data_merg[i][j]) / 2;
+									AP["data_avg"] = (AP["data_avg"] + AP["data"][j]) / 2;
 								}
 								else
 								{
-									data_avg = data_merg[i][j];
+									AP["data_avg"] = AP["data"][j];
 								}
 							}
 
 							/* remember current timestamp, calculate horizontal scale */
-							data_stamp[i] = data[i][data[i].length-1][TIME];
+							AP["data_stamp"] = data[data.length - 1][TIME];
 							data_scale = height / (data_max * 1.1);
-
 
 							/* plot data */
 							var pt_mg = '0,' + height;
-
 							var y_mg = 0;
 
-							for (var j = 0; j < data_merg[i].length; j++)
+							for (var j = 0; j < AP["data"].length; j++)
 							{
 								var x = j * step;
 
-								y_mg = height - Math.floor(data_merg[i][j] * data_scale);
+								y_mg = height - Math.floor(AP["data"][j] * data_scale);
 
 								pt_mg += ' ' + x + ',' + y_mg;
 							}
 
 							pt_mg += ' ' + width + ',' + y_mg + ' ' + width + ',' + height;
 
+							AP["obj_polyline"].setAttribute('points', pt_mg);
 
-							line_mg[i].setAttribute('points', pt_mg);
-
+							//AP["obj_label"][CUR].innerHTML = bandwidth_label(data[data.length - 1], true);
+							AP["obj_label"][AVG].innerHTML = bandwidth_label(AP["data_avg"], true);
+							AP["obj_label"][PEAK].innerHTML = bandwidth_label(AP["data_peak"], true);
+						}//for
+						
 							label_25.firstChild.data = bandwidth_label(1.1 * 0.25 * data_max);
 							label_50.firstChild.data = bandwidth_label(1.1 * 0.50 * data_max);
 							label_75.firstChild.data = bandwidth_label(1.1 * 0.75 * data_max);
-
-							//label_cur.innerHTML = bandwidth_label(data_merg[i][data_merg[i].length-1], true);
-							label_avg.innerHTML = bandwidth_label(data_avg, true);
-							label_peak.innerHTML = bandwidth_label(data_peak, true);
-						}//for
+						
 					}//function
 				);//XHR.poll
 			}
@@ -373,35 +357,29 @@ $Id: bandwidth.htm 9014 2012-08-14 13:08:18Z jow $
 <div style="text-align:right"><small id="scalew"><%=(luci.sys.exec(cmd_show_ap))%>-<%=pcdata(dev)%></small></div>
 <div style="text-align:right"><small id="scalev">-</small></div>
 <br />
-
-<form>
-	<select style="width:auto;" id="order" name="order">
-		<% if luci.http.formvalue("order") == "descend" then %>
-			<option value="ascend">Ascend</option>
-			<option value="descend" selected="selected">Descend</option>
-		<% else %>
-			<option value="ascend" selected="selected">Ascend</option>
-			<option value="descend">Descend</option>			
-		<% end %>
-	</select>
-	<input class="cbi-button cbi-button-save" type="submit" value="Submit" />
-</form>
+<!--
+<select style="width:auto;" id="sort_mac">
+			<option value="0">Ascend</option>
+			<option value="-1">Descend</option>
+</select>-->
 <table style="width:100%">                                                                                                                            
-        <thead>                                                                                                                                        
-                <tr style="text-align:center;">                                                                                                                                                                                                                           
-                        <th><%:MAC Address%></th>
-                        <th><%:Average Value%></th>
-                        <th><%:Peak Value%></th>                                                                                                       
-                </tr>                                                                                                                                  
-        </thead>                                                                                                                                       
+	<thead>                                                                                                                                        
+		<tr style="text-align:center;">
+			<th onclick="reverseTable()"><%:MAC Address%></th>
+			<th><%:Average Value%></th>
+			<th><%:Peak Value%></th>
+		</tr>
+	</thead>
 </table>
 <div style="width:100%; height:200px; overflow-y:auto; overflow-x:hidden;">
-<table id="polylines" style="width:100%; table-layout:fixed; border-collapse:collapse;" cellspacing="5">
+<table id="table_lines" style="width:100%; table-layout:fixed; border-collapse:collapse;" cellspacing="5">
+	<tbody>
 		<tr style="text-align:center; vertical-align:top">
 			<td class="cbi-value-field" colspan="6">
 				<em><%:Collecting data...%></em>
 			</td>
 		</tr>
+	</tbody>
 </table>
 </div>
 <%+footer%>
