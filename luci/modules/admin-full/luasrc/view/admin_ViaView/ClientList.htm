@@ -1,0 +1,271 @@
+<%
+--[[
+LuCI - Lua Configuration Interface
+Copyright 2008-2009 Steven Barth <steven@midlink.org>
+Copyright 2008-2011 Jo-Philipp Wich <xm@subsignal.org>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  ClientList.htm
+* Author      :  Rock Yang
+* Data        :  2013/08/19
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/08/19  Rock Yang       ...       First release
+
+--]]
+%>
+
+<%
+	require "bit"
+	require "luci.sys"
+	require "luci.tools.webadmin"
+	require "nixio.fs"	
+
+	--get message from AC-app
+	local preamble = "viamanag"
+	local cmdRecArray = {}
+	local macAddrArray = {}
+	local ipAddrArray = {}
+	local SSIDArray = {}
+	local SignalArray = {}
+	local RXRateArray = {}
+	local TXRateArray = {}
+	local APNameIPAddrArray = {}
+	apNumIndex = 1
+
+	local socket = require"socket"
+	local host   = "localhost"
+	local port   = "8888"
+
+	--use udp to communicate to AC app
+	local udp    = socket.udp()
+	udp:settimeout(10)
+	udp:setpeername(host,port)
+	--udp:sendto("test Message", host, port)
+	--udp:send("test message")
+	udp:send(preamble.."ClientListRequestStart")
+	while apNumIndex <= 255 do
+		local StrCmdReceive  = udp:receive()
+		if (StrCmdReceive) then
+			cmdRecArray[apNumIndex] = StrCmdReceive;
+			if (string.find(cmdRecArray[apNumIndex], preamble.."ClientListRequestEnd")) then
+				break;
+			end
+			if (string.find(cmdRecArray[apNumIndex], preamble.."ClientListRequestStart")) then
+				apNumIndex = apNumIndex+1
+			end
+		else
+			break;
+		end
+	end
+	udp:close()
+
+	--get ap list message to varibale array
+	local i = 1
+	local element
+	while i < apNumIndex do
+		element = "MACAddress="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				macAddrArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				macAddrArray[i] = strTmp
+			end
+		end
+		element = "IPAddress="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				ipAddrArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				ipAddrArray[i] = strTmp
+			end
+		end
+		element = "SSID="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				SSIDArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				SSIDArray[i] = strTmp
+			end
+		end
+		element = "Signal="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				SignalArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				SignalArray[i] = strTmp
+			end
+		end
+		element = "RXRate="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				RXRateArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				RXRateArray[i] = strTmp
+			end
+		end
+		element = "TXRate="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				TXRateArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				TXRateArray[i] = strTmp
+			end
+		end
+		element = "APNameIPAddress="
+		if string.find(cmdRecArray[i], element) then
+			local strTmp = string.sub(cmdRecArray[i],string.find(cmdRecArray[i], element),-1)
+			strTmp = string.sub(strTmp,string.len(element)+1,-1)
+			if string.find(strTmp, " ") then
+				APNameIPAddrArray[i] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+			else
+				APNameIPAddrArray[i] = strTmp
+			end
+		end
+
+		i = i+1
+	end
+
+%>
+
+<%+header%>
+
+<style type="text/css">
+	span:target {
+		color: blue;
+		text-decoration: underline;
+	}
+</style>
+
+<form method="post" action="<%=controller%>/admin/ViaView/APList/ApConfig">
+
+<!--
+<h1>apNumIndex: <%=pcdata(apNumIndex)%></h1>
+<h1>cmdRecArray: <%=pcdata(cmdRecArray[1])%></h1>
+-->
+
+<input id="APName" type="hidden" name="APName" value="test"/>
+<input id="IPAddress" type="hidden" name="IPAddress"/>
+<input id="MACAddress" type="hidden" name="MACAddress"/>
+<input id="ListApName" type="hidden" name="ListApName"/>
+
+<div class="cbi-map" id="cbi-network">
+	<h2><a id="content" name="content"><%:Client List%></a></h2>
+	<div class="cbi-map-descr"><%:The Client list for this AC to control%></div>
+
+<h1>Client number is: <%=pcdata(apNumIndex-1)%></h1>
+<br />
+
+	<fieldset class="cbi-section" id="cbi-table-table">
+		<legend>Information for Client</legend>
+
+		<div class="cbi-section-node">
+			<table class="cbi-section-table">
+				<tr class="cbi-section-table-titles">
+					<th class="cbi-section-table-cell"><%:MAC Address%></th>
+					<th class="cbi-section-table-cell"><%:IP Address%></th>
+					<th class="cbi-section-table-cell"><%:SSID%></th>
+					<th class="cbi-section-table-cell"><%:Signal%></th>
+					<th class="cbi-section-table-cell"><%:RX Rate%></th>
+					<th class="cbi-section-table-cell"><%:TX Rate%></th>
+					<th class="cbi-section-table-cell"><%:AP Name/IP Address%></th>
+				</tr>
+
+				<style>
+				.tabWidthFont160 {width:160px}
+				.tabWidthFont100 {width:100px}
+				.tabWidthFont100 input,.tabWidthFont100 select{font-size:11px;}
+				.tabWidthFont80 {width:80px}
+				.tabWidthFont80 input,.tabWidthFont80 select{font-size:11px;}
+				.tabWidthFont40 {width:40px}
+				.tabWidthFont40 input,.tabWidthFont40 select{font-size:11px;}                 
+				</style>
+				<% 
+					local i = 1
+					while i < apNumIndex do
+				%>
+				<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
+					<td class="cbi-value-field"><%=pcdata(macAddrArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(ipAddrArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(SSIDArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(SignalArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(RXRateArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(TXRateArray[i])%></td>
+					<td class="cbi-value-field"><%=pcdata(APNameIPAddrArray[i])%></td>
+				</tr>
+				<% 	i=i+1 end %>
+			</table>
+		</div>
+	</fieldset>
+	<br />
+
+</div>
+</form>
+
+<script>
+//<![CDATA[
+//var timeout=setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},30000);
+//clearTimeout(timeout);
+var xmlHttp;
+function createXMLHttpRequest(){
+	if (window.XMLHttpRequest) {  // Non-IE browsers
+		xmlHttp = new XMLHttpRequest();
+	}
+	else if (window.ActiveXObject) {  //IE
+			xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	else {  //browsers doesn's support AJAX
+		alert("ApConfigSave.htm: XMLHttpRequest is not supported by this browser!");
+	}
+}
+
+function funAjaxStart(ListApName, IPAddress, MACAddress){
+	//console.log(ListApName);
+	//console.log(IPAddress);
+
+	createXMLHttpRequest();
+	var url = "<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName="+ListApName+"&IPAddress="+IPAddress+"&MACAddress="+MACAddress;
+	xmlHttp.open("GET",url,true);
+	xmlHttp.onreadystatechange=callback;  //set server information function
+	xmlHttp.send(null);
+}
+
+function callback(){
+	if (xmlHttp.readyState == 4){
+		if (xmlHttp.status == 200)
+		{
+			var strResponse = xmlHttp.responseText;  // get the web server response message
+			//document.getElementById("StatusMessage").innerHTML = strResponse;
+			//console.log(xmlHttp.responseText);
+			alert(strResponse)
+			//setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},5000);
+		}
+	}
+}
+//funAjaxStart();
+//]]>
+</script>
+
+<%+footer%>

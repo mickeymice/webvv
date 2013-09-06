@@ -1,0 +1,60 @@
+<%
+--[[
+LuCI - Lua Configuration Interface
+Copyright 2008-2009 Steven Barth <steven@midlink.org>
+Copyright 2008-2011 Jo-Philipp Wich <xm@subsignal.org>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  APSTALog.htm
+* Author      :  Rock Yang
+* Data        :  2013/08/09
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO         Data     Revised by       Item       Description
+1.0.0.1   2013/08/09  Rock Yang       ...       First release
+
+--]]
+%>
+
+<%
+
+	local file
+	local msg
+
+	local strLogFileContent
+
+	file, msg = io.open("/etc/capwap/tmp.log", "r")
+	if not file then
+		strLogFileContent = msg
+	else
+		strLogFileContent = file:read("*all")
+	end
+
+%>
+
+<%+header%>
+
+<h2><a id="content" name="content">AP / Station Log</a></h2>
+<div id="content_syslog">
+	<textarea readonly="readonly" wrap="off" id="syslog"><%=pcdata(strLogFileContent)%></textarea>
+</div>
+
+<script>
+//<![CDATA[
+
+//var timeout=setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},30000);
+//clearTimeout(timeout);
+
+//]]>
+</script>
+
+<%+footer%>
