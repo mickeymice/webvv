@@ -1,0 +1,21 @@
+.row_style_0 {
+    text-align:center;
+    vertical-align:top;
+	background-color:#CCCCCC;
+}
+
+.row_style_1 {
+    text-align:center;
+    vertical-align:top;
+	background-color:#FFFFFF;
+}
+
+table {
+	border-collapse:collapse;
+	border:1px solid gray;
+}
+
+tr, th, td {
+	width:100px;
+	border:1px solid gray;
+}

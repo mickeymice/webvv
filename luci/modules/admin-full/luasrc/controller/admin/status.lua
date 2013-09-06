@@ -38,6 +38,9 @@ function index()
 	entry({"admin", "status", "realtime", "connections"}, template("admin_status/connections"), _("Connections"), 4).leaf = true
 	entry({"admin", "status", "realtime", "connections_status"}, call("action_connections")).leaf = true
 
+	entry({"admin", "status", "realtime", "remote"}, template("admin_status/remote"), _("Remote Devices"), 5).leaf = true
+	entry({"admin", "status", "realtime", "remote_status"}, call("action_remote")).leaf = true
+
 	entry({"admin", "status", "nameinfo"}, call("action_nameinfo")).leaf = true
 end
 
@@ -148,6 +151,50 @@ function action_connections()
 	end
 
 	luci.http.write(" }")
+end
+
+function action_remote(order)
+	luci.http.prepare_content("application/json")
+	
+	local cmd
+	local mac = { }
+	
+	if order == "ascend" then
+		cmd = "ls /var/lib/luci-bwc/capwap"
+	else
+		cmd = "ls -r /var/lib/luci-bwc/capwap"
+	end
+	
+	for w in string.gfind(luci.sys.exec(cmd), "[%d%a]+") do
+		table.insert(mac, w)
+	end
+	
+	luci.http.write("[")
+	--[[
+	luci.http.write_json(cmd)
+	luci.http.write_json(order)
+	luci.http.write_json(type(order))
+	--]]
+	
+	for n,v in pairs(mac) do
+		local bwc = io.popen("luci-bwc -w %q 2>/dev/null" % v)
+		if bwc then
+			luci.http.write("[")
+
+			luci.http.write(" %q," % v)
+
+			while true do
+				local ln = bwc:read("*l")
+				if not ln then break end
+				luci.http.write(ln)
+			end
+
+			luci.http.write((n < #mac) and "]," or "]")
+			bwc:close()
+		end
+	end
+
+	luci.http.write("]")
 end
 
 function action_nameinfo(...)
