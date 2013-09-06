@@ -36,6 +36,7 @@ $Id$
 	local cmdSend
 	local cmdReceive
 	local strIPAddress = luci.http.formvalue("IPAddress")
+	local strMACAddress = luci.http.formvalue("MACAddress")
 
 	local cmdElemString={"ApDhcpEnable","ApScanStatus","ApScanInterval",
 	"ApIpAddress","ApNetmask", "ApGateway",
@@ -114,7 +115,8 @@ $Id$
 	["PrimaryIPKey5G4"]=109,["SecondIP5G4"]=110,["SecondIPPort5G4"]=111,["SecondIPKey5G4"]=112}
 
 	--step 2. get save parameter and construct the send command
-	cmdSend = preamble.."APConfigurationSave ".."IPAddress="..strIPAddress
+	--cmdSend = preamble.."APConfigurationSave ".."IPAddress="..strIPAddress
+	cmdSend = preamble.."APConfigurationSave ".."MACAddress="..strMACAddress
 	index = 1
 	local cmdStr = "SecondIPKey5G4"
 	while index <= revCmdElemString[cmdStr] do

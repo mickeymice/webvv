@@ -37,10 +37,12 @@ $Id$
 	local cmdReceive
 	local strRetStatus
 	local strIPAddress = luci.http.formvalue("IPAddress")
+	local strMACAddress = luci.http.formvalue("MACAddress")
 	local strListApName = luci.http.formvalue("ListApName")
 	
 	--setp 1. get ApNa parameter and construct the send command
-	cmdSend = preamble.."APConfigurationNameSave ".."IPAddress="..strIPAddress.." ".."APName="..strListApName
+	--cmdSend = preamble.."APConfigurationNameSave ".."IPAddress="..strIPAddress.." ".."APName="..strListApName
+	cmdSend = preamble.."APConfigurationNameSave ".."MACAddress="..strMACAddress.." ".."APName="..strListApName
 
 	local socket = require"socket"
 	local host   = "192.168.0.106"

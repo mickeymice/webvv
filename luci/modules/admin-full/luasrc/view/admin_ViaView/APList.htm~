@@ -201,6 +201,7 @@ $Id$
 
 <input id="APName" type="hidden" name="APName" value="test"/>
 <input id="IPAddress" type="hidden" name="IPAddress"/>
+<input id="MACAddress" type="hidden" name="MACAddress"/>
 <input id="ListApName" type="hidden" name="ListApName"/>
 
 <div class="cbi-map" id="cbi-network">
@@ -242,7 +243,7 @@ $Id$
 				<tr class="cbi-section-table-row cbi-rowstyle-<%=(style and 1 or 2)%>">
 					<td class="tabWidthFont160">
 						<input type="text" onchange="" name="ListApNamei" id="ListApNamei<%=pcdata(i)%>" value="<%=pcdata(apNameArray[i])%>" style="width:100px" />
-						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="funAjaxStart(document.getElementById('ListApNamei<%=pcdata(i)%>').value ,'<%=pcdata(ipAddrArray[i])%>'); " style="width:50px" />
+						<input class="cbi-button cbi-button-save" type="button" value="Save" onclick="funAjaxStart(document.getElementById('ListApNamei<%=pcdata(i)%>').value ,'<%=pcdata(ipAddrArray[i])%>' ,'<%=pcdata(macAddrArray[i])%>'); " style="width:50px" />
 					</td>
 					<!--
 					<td class="tabWidthFont160">
@@ -257,7 +258,7 @@ $Id$
 					<td class="cbi-value-field"><%=pcdata(statusArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(profileArray[i])%></td>
 					<td class="cbi-value-field"><%=pcdata(groupArray[i])%></td>
-					<td class="cbi-value-field"> <input type="submit" class="cbi-button cbi-button-edit" style="width:100px" onclick="document.getElementById('APName').value='<%=pcdata(apNameArray[i])%>'; document.getElementById('IPAddress').value='<%=pcdata(ipAddrArray[i])%>'"  name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
+					<td class="cbi-value-field"> <input type="submit" class="cbi-button cbi-button-edit" style="width:100px" onclick="document.getElementById('APName').value='<%=pcdata(apNameArray[i])%>'; document.getElementById('IPAddress').value='<%=pcdata(ipAddrArray[i])%>'; document.getElementById('MACAddress').value='<%=pcdata(macAddrArray[i])%>'"  name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
 					</td>
 					<!--<td class="cbi-value-field"> <input type="button" class="cbi-button cbi-button-edit" style="width:100px"  onclick="location.href='<%=controller%>/admin/ViaView/ApConfig?ApName=<%=pcdata(apNameArray[i])%>&amp;num=<%=pcdata(i)%>&amp;num2=<%=i%>'" name="cbid.table.1._term" id="cbid.table.1._term" title="Edit this AP"  value="Edit" />
 					</td>
@@ -289,12 +290,12 @@ $Id$
 		}
 	}
 
-	function funAjaxStart(ListApName, IPAddress){
+	function funAjaxStart(ListApName, IPAddress, MACAddress){
 		console.log(ListApName);
 		console.log(IPAddress);
 
 		createXMLHttpRequest();
-		var url = "<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName="+ListApName+"&IPAddress="+IPAddress;
+		var url = "<%=controller%>/admin/ViaView/APList/ApNameSave?ListApName="+ListApName+"&IPAddress="+IPAddress+"MACAddress"+MACAddress;
 		xmlHttp.open("GET",url,true);
 		xmlHttp.onreadystatechange=callback;  //set server information function
 		xmlHttp.send(null);

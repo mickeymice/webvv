@@ -135,7 +135,7 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 	udp:setpeername(host,port)
 	--udp:sendto("test Message", host, port)
 	--udp:send("test message")
-	udp:send(preamble.."APConfigurationStart".."IPAddress="..tostring(luci.http.formvalue("IPAddress")))
+	udp:send(preamble.."APConfigurationStart".."MACAddress="..tostring(luci.http.formvalue("MACAddress")))
 	while index <= 20 do
 		cmdReceive  = udp:receive()
 		if (cmdReceive) then
@@ -199,6 +199,7 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 
 	strAPName = luci.http.formvalue("APName")
 	strIPAddress = luci.http.formvalue("IPAddress")
+	strMACAddress = luci.http.formvalue("MACAddress")
 %>
 
 
@@ -217,6 +218,7 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 	<label>AP Name: </label>
 	<input id="APName" type="text" name="APName" value="<%=pcdata(strAPName)%>" style="width:150px" disabled="disabled" />
 	<input id="IPAddress" type="hidden" name="IPAddress" value="<%=pcdata(strIPAddress)%>" />
+	<input id="MACAddress" type="hidden" name="MACAddress" value="<%=pcdata(strMACAddress)%>" />
 	<br />
 	<br />
 
