@@ -45,7 +45,7 @@ $Id$
 	cmdSend = preamble.."APConfigurationNameSave ".."MACAddress="..strMACAddress.." ".."APName="..strListApName
 
 	local socket = require"socket"
-	local host   = "192.168.0.106"
+	local host   = "localhost"
 	local port   = "8888"
 
 	--use udp to communicate to AC app
@@ -60,7 +60,7 @@ $Id$
 	udp:close()
 
 	if (cmdReceive) then
-		if (string.find(cmdReceive, preamble.."APConfigurationNameSave".." ".."Status=")) then
+		if (string.find(cmdReceive, preamble.."APConfigurationNameSave ".."Status=")) then
 			local strTmp = string.sub(cmdReceive, string.find(cmdReceive, "Status="),-1)
 			strTmp = string.sub(strTmp, string.len("Status=")+1,-1)
 			strRetStatus = strTmp

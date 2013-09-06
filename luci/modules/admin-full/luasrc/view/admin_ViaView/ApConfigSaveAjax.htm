@@ -46,7 +46,7 @@ $Id$
 
 	--setp 2. receive the satus for ap configuration set command send
 	local socket = require"socket"
-	local host   = "192.168.0.106"
+	local host   = "localhost"
 	local port   = "8888"
 	local udp    = socket.udp()
 	udp:settimeout(120)
@@ -60,7 +60,7 @@ $Id$
 	udp:close()
 
 	if (cmdReceive) then
-		if (string.find(cmdReceive, preamble.."APConfigurationStart".." ".."Status=")) then
+		if (string.find(cmdReceive, preamble.."APConfigurationStart".." Status=")) then
 			local strTmp = string.sub(cmdReceive, string.find(cmdReceive, "Status="),-1)
 			strTmp = string.sub(strTmp, string.len("Status=")+1,-1)
 			strRetStatus = strTmp

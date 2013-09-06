@@ -131,7 +131,7 @@ $Id$
 
 	-- step 3. setup socket and send command
 	local socket = require"socket"
-	local host   = "192.168.0.106"
+	local host   = "localhost"
 	local port   = "8888"
 	local localIp
 	local localPort
@@ -217,7 +217,7 @@ $Id$
 			{
 				var strResponse = xmlHttp.responseText;  // get the web server response message
 				document.getElementById("StatusMessage").innerHTML = strResponse;
-                                console.log(xmlHttp.responseText);
+                                //console.log(xmlHttp.responseText);
 				setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},5000);
 			}
 			else

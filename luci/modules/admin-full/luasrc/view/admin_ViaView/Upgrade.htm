@@ -2,9 +2,16 @@
 <fieldset class="cbi-section">
 <legend><%:Update Status%></legend>
 <% if(status) then%>
-	<h1><%:The file has been upload at %><%=filename%></h1>
+	<p><%:The file has been upload at %><%=filename%></p>
 <% else %>
-	<h1><%:upload file failed.%></h1>
+	<p><%:upload file failed.%></p>
 <%end%>
 </fieldset>
+
+<script>
+//<![CDATA[
+	setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APUpdate?Status=<%=pcdata(status)%>";},3000);
+//]]>
+</script>
+
 <%+footer%>

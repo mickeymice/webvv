@@ -126,7 +126,7 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 	["PrimaryIPKey5G4"]=109,["SecondIP5G4"]=110,["SecondIPPort5G4"]=111,["SecondIPKey5G4"]=112}
 
 	local socket = require"socket"
-	local host   = "192.168.0.106"
+	local host   = "localhost"
 	local port   = "8888"
 
 	--use udp to communicate to AC app
@@ -363,7 +363,6 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
 			<div class="cbi-value-field">
 				<select id="ApMode2.4G" class="cbi-input-select" name="ApMode2.4G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApMode2.4G']])%>" >
-				<option id="cbi-network-wan-proto-static" value="0">auto</option>
 				<option id="cbi-network-wan-proto-static" value="1">802.11 b</option>
 				<option id="cbi-network-wan-proto-static" value="2">802.11 g</option>
 				<option id="cbi-network-wan-proto-static" value="3">802.11 g+n</option>
@@ -717,7 +716,6 @@ strAPName=str1.substring(str1.indexOf("APName=")+6,str1.indexOf('&'))
 			<div class="cbi-value"><label class="cbi-value-title">Mode</label>
 			<div class="cbi-value-field">
 				<select id="ApMode5G" class="cbi-input-select" name="ApMode5G" value="<%=pcdata(cmdElemValue[revCmdElemString['ApMode5G']])%>" >
-				<option id="cbi-network-wan-proto-static" value="0">auto</option>
 				<option id="cbi-network-wan-proto-static" value="1">802.11 a</option>
 				<option id="cbi-network-wan-proto-static" value="2">802.11 a+n</option>
 				</select>
@@ -1310,7 +1308,7 @@ function fSecurityMode(arg, disbl)
   {
     if ((seValue == "4"||seValue == "5") && (disbl!==true))
     {
-      console.log('ok');
+      //console.log('ok');
       document.getElementById("PrimaryIP2.4G1").disabled=false;
       document.getElementById("PrimaryIPPort2.4G1").disabled=false;
       document.getElementById("PrimaryIPKey2.4G1").disabled=false;
@@ -1487,108 +1485,109 @@ function fSetSelectItem()
   var x;
   x = document.getElementById("ApHTMode2.4G");
   <% if (cmdElemValue[revCmdElemString["ApHTMode2.4G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApHTMode2.4G"]])%>;
+  //x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApHTMode2.4G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApHTMode2.4G"]])%>;
   <% end %>
   x = document.getElementById("ApTransmitPower2.4G");
   <% if (cmdElemValue[revCmdElemString["ApTransmitPower2.4G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApTransmitPower2.4G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApTransmitPower2.4G"]])%>;
   <% end %>
   x = document.getElementById("ApMode2.4G");
   <% if (cmdElemValue[revCmdElemString["ApMode2.4G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApMode2.4G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApMode2.4G"]])%>;
   <% end %>
   x = document.getElementById("ApChannel2.4G");
   <% if (cmdElemValue[revCmdElemString["ApChannel2.4G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApChannel2.4G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApChannel2.4G"]])%>;
   <% end %>
 //set 2.4G 1
   x = document.getElementById("ApSecurityMode2.4G1");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G1"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G1"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G1"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher2.4G1");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G1"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G1"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G1"]])%>;
   <% end %>
 //set 2.4G 2
   x = document.getElementById("ApSecurityMode2.4G2");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G2"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G2"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G2"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher2.4G2");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G2"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G2"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G2"]])%>;
   <% end %>
 //set 2.4G 3
   x = document.getElementById("ApSecurityMode2.4G3");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G3"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G3"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G3"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher2.4G3");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G3"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G3"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G3"]])%>;
   <% end %>
 //set 2.4G 4
   x = document.getElementById("ApSecurityMode2.4G4");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode2.4G4"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G4"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode2.4G4"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher2.4G4");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher2.4G4"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G4"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher2.4G4"]])%>;
   <% end %>
 
   x = document.getElementById("ApHTMode5G");
   <% if (cmdElemValue[revCmdElemString["ApHTMode5G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApHTMode5G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApHTMode5G"]])%>;
   <% end %>
   x = document.getElementById("ApTransmitPower5G");
   <% if (cmdElemValue[revCmdElemString["ApTransmitPower5G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApTransmitPower5G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApTransmitPower5G"]])%>;
   <% end %>
   x = document.getElementById("ApMode5G");
   <% if (cmdElemValue[revCmdElemString["ApMode5G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApMode5G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApMode5G"]])%>;
   <% end %>
   x = document.getElementById("ApChannel5G");
   <% if (cmdElemValue[revCmdElemString["ApChannel5G"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApChannel5G"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApChannel5G"]])%>;
   <% end %>
   //set 5G 1
   x = document.getElementById("ApSecurityMode5G1");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G1"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G1"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G1"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher5G1");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G1"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G1"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G1"]])%>;
   <% end %>
   //set 5G2
   x = document.getElementById("ApSecurityMode5G2");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G2"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G2"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G2"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher5G2");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G2"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G2"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G2"]])%>;
   <% end %>
   //set 5G3
   x = document.getElementById("ApSecurityMode5G3");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G3"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G3"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G3"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher5G3");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G3"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G3"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G3"]])%>;
   <% end %>
   //set 5G4
   x = document.getElementById("ApSecurityMode5G4");
   <% if (cmdElemValue[revCmdElemString["ApSecurityMode5G4"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G4"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApSecurityMode5G4"]])%>;
   <% end %>
   x = document.getElementById("ApIndexCipher5G4");
   <% if (cmdElemValue[revCmdElemString["ApIndexCipher5G4"]]) then%>
-  x.selectedIndex = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G4"]])%>;
+  x.value = <%=pcdata(cmdElemValue[revCmdElemString["ApIndexCipher5G4"]])%>;
   <% end %>
 }
 

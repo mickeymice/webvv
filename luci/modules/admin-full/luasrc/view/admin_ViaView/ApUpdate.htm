@@ -1,4 +1,28 @@
 <%
+--[[
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+	http://www.apache.org/licenses/LICENSE-2.0
+$Id$
+
+* Copyright (c) 2013, VIA Technologies, Inc.
+* Project Name:  ViaView web implementation
+* File Name   :  ApUpdataAjax.htm
+* Author      :  Tymon Huang / Rock Yang
+* Data        :  2013/08/01
+* Description :  this file is use to save user add data to app.
+* Revision History
+ NO        Data            Revised by       Item       Description
+1.0.0.1  2013/07/29  Tymon Huang/Rock Yang       ...       First release
+
+--]]
+%>
+
+<%
     local h    = require "luci.http"
     local io   = require "nixio"
     local socket = require "socket"
@@ -56,7 +80,13 @@
 					filename = path
 				})
             end
-		end
+
+            --luci.http.redirect(
+            --    luci.dispatcher.build_url("admin", "status", "iptables")
+            --)
+            --luci.http.redirect(luci.dispatcher.build_url("admin/ViaView/APList") .. "?display=list")
+            --h.redirect(h.dispatcher.build_url("admin", "ViaView", "APUpdate"))
+	end
     )
 
     -- this section must be put under setfilehandler
@@ -64,7 +94,54 @@
         return
     end
     
-    -- use udp to communicate to AC app
+
+
+	--Step 1. Get Profiel list from AC (use udp to communicate to AC app)
+	local ProfileNum = 1
+	local profileListCmdArray = {}
+	local cmdProfileNameArray = {}
+	local udp    = socket.udp()
+	udp:settimeout(10)
+	udp:setpeername(host,port)
+	--udp:sendto("test Message", host, port)
+	--udp:send("test message")
+	udp:send(preamble.."ProfileListRequestStart")
+	while ProfileNum <= 100 do
+		local StrCmdReceive  = udp:receive()
+		if (StrCmdReceive) then
+			profileListCmdArray[ProfileNum] = StrCmdReceive;
+			if (string.find(profileListCmdArray[ProfileNum], preamble.."ProfileListRequestEnd")) then
+				break;
+			end
+			if (string.find(profileListCmdArray[ProfileNum], preamble.."ProfileListRequestStart")) then
+				ProfileNum = ProfileNum+1
+			end
+		else
+			break;
+		end
+	end
+	udp:close()
+
+	--Step 1.1. parse profile list message to array varibale 
+	local profileNumIndex = 1
+	while profileNumIndex < ProfileNum do
+			local element = "ProfileName="
+			if string.find(profileListCmdArray[profileNumIndex], element) then
+				local strTmp = string.sub(profileListCmdArray[profileNumIndex],string.find(profileListCmdArray[profileNumIndex], element),-1)
+				strTmp = string.sub(strTmp,string.len(element)+1,-1)
+				if string.find(strTmp, " ") then
+					cmdProfileNameArray[profileNumIndex] = string.sub(strTmp,1,string.find(strTmp, " ")-1)
+				else
+					cmdProfileNameArray[profileNumIndex] = strTmp
+				end
+			else
+				--cmdProfileNameArray[profileNumIndex][elemIndex] = "0"
+			end
+		profileNumIndex = profileNumIndex+1
+	end
+
+
+	-- Step 2. Get Ap list(use udp to communicate to AC app)
 	local udp    = socket.udp()
 	udp:settimeout(10)
 	udp:setpeername(host,port)
@@ -85,7 +162,7 @@
 	end
 	udp:close()
 
-	--get ap list message to varibale array
+	--Step 2.1 parse ap list message to array varibale
 	local i = 1
 	local element
 	while i < apNumIndex do
@@ -173,25 +250,66 @@
 		i = i+1
 	end
 
+	strUploadFWStatus = luci.http.formvalue("Status")	
+
 %>
 
 <%+header%>
 <script type="text/javascript" src="<%=resource%>/script/common.js"></script>
 
+
 <fieldset class="cbi-section">
 	<legend><%:Update Firmware / Apply Profile%></legend>
-	
-	<form id="update" name="update" action="<%=REQUEST_URI%>" method="post" enctype="multipart/form-data">
-	
-	<fieldset class="cbi-section">
-		<input type="hidden" name="act" value="update" />
-		Update Profile<input type="radio" name="updateOps" value="profile" onclick="modifyName('targetFile', 'profile')" />&nbsp;
-		Flash Firmware<input type="radio" name="updateOps" value="firmware" onclick="modifyName('targetFile', 'firmware')" />&nbsp;
 
-		<input type="file" id="targetFile" name=""/>
-		<!-- <input type="submit" id="updateBtn" class="cbi-button cbi-button-apply" value="upgrade firmware" /> -->
+<!--
+	<ul class="cbi-tabmenu">
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tabProfile').style.display='block';document.getElementById('tabFirmware').style.display='none';">Update Profile</a></li>
+		<li class="cbi-tab"><a href="#" onclick="document.getElementById('tabProfile').style.display='none';document.getElementById('tabFirmware').style.display='block';">Update Firmware</a></li>
+	</ul>
+	<fieldset class="cbi-section-node cbi-section-node-tabbed">
+		<div class="cbi-tabcontainer">
+		<div id="tabProfile" style="border:1px solid #ccc">
+		</div></div>
 
+		<div class="cbi-tabcontainer">
+		<div id="tabFirmware" style="display:none">
+		</div></div>
 	</fieldset>
+-->
+		<!--<form id="update" name="update" action="<%=REQUEST_URI%>" method="post" enctype="multipart/form-data">-->
+	<form id="update" name="update" action="<%=controller%>/admin/ViaView/APUpdate" method="post" enctype="multipart/form-data">
+		<fieldset class="cbi-section">
+			<input type="hidden" name="act" value="update" />
+			<input id="UploadFWStatus" type="hidden" name="UploadFWStatus" value="<%=pcdata(strUploadFWStatus)%>" />
+			<br />
+			Update Profile
+			<input type="radio" name="updateOps" value="profile" checked="checked" onclick="modifyName('targetFile', 'profile')" />&nbsp;
+			<select id="ProfileNameList" class="cbi-input-select" name="ProfileNameList" >
+				<% 
+					local i = 1
+					while i < ProfileNum do
+				%>
+				<option value="<%=pcdata(cmdProfileNameArray[i])%>"><%=pcdata(cmdProfileNameArray[i])%></option>
+				<% 	i=i+1 end %>
+			</select>
+			<br />
+			<br />
+			<hr />
+			<br />
+
+			Flash Firmware
+			<% if (strUploadFWStatus == "true") then %>
+			<input type="radio" name="updateOps" value="firmware" checked="checked" onclick="modifyName('targetFile', 'firmware')" />&nbsp;
+			<% else %>
+			<input type="radio" name="updateOps" value="firmware" onclick="modifyName('targetFile', 'firmware')" />&nbsp;
+			<% end %>
+			<input type="file" id="targetFile" name="profile"/>
+			<input type="submit" id="updateBtn" class="cbi-button cbi-button-apply" value="upload firmware" />
+			<br />
+		</fieldset>
+	</form>
+	
+
 	
 	<fieldset class="cbi-section">
 		<legend><%:AP List to be Upgraded%></legend>
@@ -204,10 +322,9 @@
 				<th class="cbi-section-table-cell"><%:Model%></th>
 				<th class="cbi-section-table-cell"><%:IP Address%></th>
 				<th class="cbi-section-table-cell"><%:MAC Address%></th>
-				<th class="cbi-section-table-cell"><%:Channel(GHz/GHz)%></th>
 				<th class="cbi-section-table-cell"><%:Status%></th>
 				<th class="cbi-section-table-cell"><%:Profile%></th>
-				<th class="cbi-section-table-cell"><%:Group%></th>
+				<th class="cbi-section-table-cell"><%:Update Status%></th>
 			</tr>
 			<% 
 				local i = 1
@@ -217,26 +334,123 @@
 				<td class="cbi-value-field">
 					<input type="checkbox" name="itemAP" value="<%:NAME1%>" />
 				</td>
-				<td class="cbi-value-field"><%=pcdata(apNameArray[i])%></td>
+				<td class="cbi-value-field" name="tdApName"><%=pcdata(apNameArray[i])%></td>
 				<td class="cbi-value-field"><%=pcdata(modelArray[i])%></td>
-				<td class="cbi-value-field"><%=pcdata(ipAddrArray[i])%></td>
-				<td class="cbi-value-field"><%=pcdata(macAddrArray[i])%></td>
-				<td class="cbi-value-field"><%=pcdata(channelArray[i])%></td>
+				<td class="cbi-value-field" name="tdIpAddr"><%=pcdata(ipAddrArray[i])%></td>
+				<td class="cbi-value-field" name="tdMacAddr"><%=pcdata(macAddrArray[i])%></td>
 				<td class="cbi-value-field"><%=pcdata(statusArray[i])%></td>
 				<td class="cbi-value-field"><%=pcdata(profileArray[i])%></td>
-				<td class="cbi-value-field"><%=pcdata(groupArray[i])%></td>
+				<td class="cbi-value-field" name="tdStatus" style="color:red"></td>
 			</tr>
 			<% 	
 				i = i + 1 end 
 			%>
 		</table>
 	</fieldset>
-	<div class="cbi-page-actions">
-			<input class="cbi-button cbi-button-apply" type="submit" name="cbi.apply" onclick="" value="Save &#38; Apply" />					
+
+
+	<div class="cbi-page-actions" style="text-align:right">
+		<img src="/luci-static/resources/icons/loading.gif" style="float:left;height:20px;display:none;vertical-align:middle" alt="Loading" id="ImgLoading"/>
+		<input class="cbi-button cbi-button-apply" type="button" name="cbi.apply" onclick="funApUpdate()" value="Update" />					
 	</div>
 	<div class="clear"></div>
-	
-	</form>
+
+
 </fieldset>
+
+<script>
+//<![CDATA[
+var imgLoading=document.getElementById("ImgLoading");
+var updateApNum = 0;
+
+
+function createXMLHttpRequest(){
+	var xmlHttp;
+
+	if (window.XMLHttpRequest) {  // Non-IE browsers
+		xmlHttp = new XMLHttpRequest();
+	}
+	else if (window.ActiveXObject) {  //IE
+			xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	else {  //browsers doesn's support AJAX
+		alert("ApConfigSave.htm: XMLHttpRequest is not supported by this browser!");
+	}
+	return xmlHttp;
+}
+
+function funAjaxStart(bProfileOrFirmware, ProfileName, APIndex, MACAddress){
+	var xmlHttp;
+	//console.log(ListApName);
+	//console.log(IPAddress);
+	xmlHttp = createXMLHttpRequest();
+
+	var url = "<%=controller%>/admin/ViaView/APUpdateAjax?bProfileOrFirmware="+bProfileOrFirmware+"&ProfileName="+ProfileName+"&APIndex="+APIndex+"&MACAddress="+MACAddress;
+	xmlHttp.open("GET",url,true);
+	xmlHttp.onreadystatechange=function(){callback(xmlHttp);};  //set server information function
+	xmlHttp.send(null);
+}
+
+function callback(xmlHttp){
+	//console.log("test");
+	if (xmlHttp.readyState == 4){
+		if (xmlHttp.status == 200)
+		{
+			updateApNum--;
+			var strResponse = xmlHttp.responseText;  // get the web server response message
+			var Index;
+			var status;
+
+			//document.getElementById("StatusMessage").innerHTML = strResponse;
+			Index = strResponse.substring(strResponse.indexOf("APIndex=")+8,strResponse.indexOf(' '));
+			status=strResponse.substring(strResponse.indexOf("Status=")+7);
+			//console.log(strResponse+"Index:"+Index+"status:"+status);
+			//alert(strResponse+"Index:"+Index+"status:"+status);
+
+			document.getElementsByName("tdStatus")[Number(Index)].innerHTML=status;
+			//setTimeout(function(){location.href="<%=controller%>/admin/ViaView/APList";},5000);
+
+			if (updateApNum == 0)
+			{
+				imgLoading.style.display="none";
+			}
+		}
+	}
+}
+
+function funApUpdate()
+{
+	var bProfileOrFirmware = true;
+	var ProfileName;
+	imgLoading.style.display="block";
+
+	if (document.getElementsByName("updateOps")[0].checked == true)
+	{
+		bProfileOrFirmware = true;
+		ProfileName = document.getElementsByName("ProfileNameList")[0].value;
+	}
+	else
+	{
+		bProfileOrFirmware = false;
+	}
+
+	for (var APIndex = 0; APIndex < <%=pcdata(apNumIndex-1)%>; APIndex++)
+	{
+		if (document.getElementsByName("itemAP")[APIndex].checked == true)
+		{
+			var MACAddress = document.getElementsByName("tdMacAddr")[APIndex].innerHTML;
+			updateApNum++;
+			funAjaxStart(bProfileOrFirmware, ProfileName, APIndex , MACAddress);
+		}	
+	}
+
+	if (updateApNum == 0)
+	{
+		imgLoading.style.display="none";
+		alert("Please select AP to update");
+	}	
+}
+//]]>
+</script>
 
 <%+footer%>

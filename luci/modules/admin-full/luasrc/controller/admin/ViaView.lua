@@ -28,18 +28,37 @@ function index()
 	--entry({"admin", "ViaView"}, firstchild(), "ViaView", 60).dependent=false
 	--entry({"admin", "system"}, alias("admin", "system", "system"), _("System"), 30).index = true
 	entry({"admin", "ViaView"}, alias("admin", "ViaView", "APList"), _("ViaView"), 60).index = true
-	entry({"admin", "ViaView", "APList"}, template("admin_ViaView/APList"), _("AP List"), 1)
+
+	entry({"admin", "ViaView", "APList"}, template("admin_ViaView/ApList"), _("AP List"), 1)
 	entry({"admin", "ViaView", "APList", "ApConfig"}, template("admin_ViaView/ApConfig"), nil).leaf = true
 	entry({"admin", "ViaView", "APList", "ApConfigSave"}, template("admin_ViaView/ApConfigSave"), nil).leaf = true
 	entry({"admin", "ViaView", "APList", "ApConfigSaveAjax"}, template("admin_ViaView/ApConfigSaveAjax"), nil).leaf = true
 	entry({"admin", "ViaView", "APList", "ApNameSave"}, template("admin_ViaView/ApNameSave"), nil).leaf = true
-	entry({"admin", "ViaView", "APUpdate"}, template("admin_ViaView/ApUpdate"), _("Update Firmware / Profile"), 2).dependent = false
+	--entry({"admin", "ViaView", "ApConfig"}, template("admin_ViaView/ApConfig"), "AP config", 60).dependent=false
 
---entry({"admin", "ViaView", "ApConfig"}, template("admin_ViaView/ApConfig"), "AP config", 60).dependent=false
+	entry({"admin", "ViaView", "ClientList"}, template("admin_ViaView/ClientList"), _("Client List"), 2)
 
+	entry({"admin", "ViaView", "Profile"}, template("admin_ViaView/Profile"), _("Profile Management"), 3)
+	entry({"admin", "ViaView", "Profile", "ProfileAdd"}, template("admin_ViaView/ProfileAdd"), nil).leaf = true
+	entry({"admin", "ViaView", "Profile", "ProfileDelete"}, template("admin_ViaView/ProfileDelete"), nil).leaf = true
+	entry({"admin", "ViaView", "Profile", "ProfileModify"}, template("admin_ViaView/ProfileModify"), nil).leaf = true
 
+	entry({"admin", "ViaView", "APUpdate"}, template("admin_ViaView/ApUpdate"), _("Update Firmware / Profile"), 4)
+	entry({"admin", "ViaView", "APUpdateAjax"}, template("admin_ViaView/ApUpdateAjax"), nil).leaf = true
 
+	entry({"admin", "ViaView", "MACSecurity"}, template("admin_ViaView/MacSecurity"), _("MAC Security"), 5)
 
+	entry({"admin", "ViaView", "ACSyslogIP"}, template("admin_ViaView/AcSyslogIp"), _("AC / Syslog IP"), 6)
+	entry({"admin", "ViaView", "ACSyslogIPSave"}, template("admin_ViaView/AcSyslogIpSave"), nil).leaf = true
+
+	--entry({"admin", "ViaView", "NetV4Config"}, template("admin_ViaView/NetV4Config"), _("Network V4 config"), 7)
+	--entry({"admin", "ViaView", "NetV6Config"}, template("admin_ViaView/NetV6Config"), _("Network V6 config"), 8)
+
+	entry({"admin", "ViaView", "FriendlyRogueAp"}, template("admin_ViaView/FriendlyRogueAp"), _("Friendly / Rogue AP"), 10)
+	entry({"admin", "ViaView", "FriendlyRogueApSave"}, template("admin_ViaView/FriendlyRogueApSave"), nil).leaf = true
+
+	entry({"admin", "ViaView", "StatisticsData"}, template("admin_ViaView/StatisticsData"), _("Statistics Data"), 15)
+	entry({"admin", "ViaView", "APSTALog"}, template("admin_ViaView/ApStaLog"), _("AP / STA log"), 16)
 end
 
 --[[
